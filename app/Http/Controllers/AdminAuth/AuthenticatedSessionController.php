@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\AdminAuth;
 
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -29,8 +28,8 @@ class AuthenticatedSessionController extends Controller
                return ApiResponse::sendResponse(200, 'Success', $validator->messages()->all());
            }
    
-           if(Auth::attempt(['email' => $request->email, 'password' => $request->password])){
-               $user = Auth::user();
+           if(Auth::guard('owner')->attempt(['email' => $request->email, 'password' => $request->password])){
+               $user = Auth::guard('owner')->user();
                $data['token'] = $user->createToken('auth_token')->plainTextToken;
                $data['name'] = $user->name;
                $data['email'] = $user->email;
