@@ -8,6 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class Property extends Model
 {
     use HasFactory;
+    protected $table = "properties";
+    protected $fillable = [
+        "name",
+        "headline",
+        "description",
+        "amenities",
+        "number_of_rooms",
+        "image",
+        "city",
+        "country",
+        "address",
+        "night_rate",
+        "status",
+    ];
 
     public function category()
     {
