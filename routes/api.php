@@ -14,3 +14,5 @@ Route::apiResource('/categories', CategoryController::class);
 // >Property Route< //
 Route::apiResource("property", PropertyController::class);
 // ################ //
+
+Route::get('/properties/search', [PropertyController::class, 'search']);

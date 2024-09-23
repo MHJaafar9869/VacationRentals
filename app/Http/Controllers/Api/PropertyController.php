@@ -115,4 +115,50 @@ class PropertyController extends Controller
             "message" => "Property deleted successfully"
         ], 200);
     }
+    public function search(Request $request)
+    {
+        $query = Property::query();
+        if ($request->has('name')) {
+            $query->where('name', 'like', '%' . $request->input('name') . '%');
+        }
+        if ($request->has('headline')) {
+            $query->where('headline', 'LIKE', '%' . $request->input('headline') . '%');
+        }
+    
+        
+    
+       
+    
+        if ($request->has('city')) {
+            $query->where('city', $request->input('city'));
+        }
+        if ($request->has('country')) {
+            $query->where('country', $request->input('country'));
+        }
+        if ($request->has('address')) {
+            $query->where('address', $request->input('address'));
+        }
+        if ($request->has('number_of_rooms')) {
+            $query->where('number_of_rooms', '>=', $request->input('number_of_rooms'));
+        }
+    
+       
+        if ($request->has('amenities')) {
+            $amenities = explode(',', $request->input('amenities')); 
+            $query->where(function($q) use ($amenities) {
+                foreach ($amenities as $amenity) {
+                    $q->orWhere('amenities', 'LIKE', '%' . trim($amenity) . '%');
+                }
+            });
+        }
+
+        $properties = $query->get();
+
+        if ($properties->isEmpty()) {
+            return response()->json(['message' => 'No properties found'], 404);
+        }
+
+        return response()->json($properties);
+    }
+   
 }
