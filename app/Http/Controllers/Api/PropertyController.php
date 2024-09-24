@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PropertyResource;
 use App\Http\Resources\PropertyResourse;
+use App\Models\Category;
 use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -33,6 +34,7 @@ class PropertyController extends Controller
             'country' => 'required',
             'address' => 'required',
             'night_rate' => 'required | integer',
+            'category_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -53,6 +55,7 @@ class PropertyController extends Controller
             'country' => $request->country,
             'address' => $request->address,
             'night_rate' => $request->night_rate,
+            'category_id' => $request->category_id,
         ]);
         return response()->json(
             [
@@ -79,6 +82,7 @@ class PropertyController extends Controller
             'country' => 'required',
             'address' => 'required',
             'night_rate' => 'required | integer',
+            'category_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -99,6 +103,7 @@ class PropertyController extends Controller
             'country' => $request->country,
             'address' => $request->address,
             'night_rate' => $request->night_rate,
+            'category_id' => $request->category_id,
         ]);
         return response()->json(
             [
@@ -159,6 +164,16 @@ class PropertyController extends Controller
         }
 
         return response()->json($properties);
+    }
+    public function getpropertycategory($id){
+        $category = Category::find($id);
+        if (!$category) {
+            return response()->json([
+                'message' => 'Category not found'
+            ], 404);
+        } 
+        $property = $category->properties;
+        return propertyResource ::collection($property);
     }
    
 }
