@@ -11,19 +11,18 @@ class UserController extends Controller
 {
     public function updateprofile(Request $request, $id)
     {
-
         $validator = Validator::make($request->all(), [
             'name' => ['required'],
-            'email' => ['required'],
-            'password' => ['nullable'],
+            'email' => ['required', 'email'],
+            'password' => ['nullable', 'min:8'],
             'phone' => ['required'],
             'address' => ['required'],
             'gender' => ['required'],
-            'image' => ['nullable'],
+            'image' => ['nullable', 'image'],
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+            return response()->json($validator->errors(), 422);
         }
 
         $user = User::findOrFail($id);
@@ -52,9 +51,10 @@ class UserController extends Controller
         }
 
         $user->save();
-        if ($user->isEmpty()) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-        return response()->json($user);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => $user
+        ], 200);
     }
 }
