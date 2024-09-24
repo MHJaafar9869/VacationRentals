@@ -21,6 +21,7 @@ class Property extends Model
         "address",
         "night_rate",
         "status",
+        "category_id",
     ];
 
     public function category()

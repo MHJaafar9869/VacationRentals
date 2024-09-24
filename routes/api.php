@@ -19,6 +19,8 @@ Route::apiResource("property", PropertyController::class);
 
 Route::get('/properties/search', [PropertyController::class, 'search']);
 
+Route::get('/properties/category/{id}', [PropertyController::class, 'getpropertycategory']);
+
 // ===================Auth Routes====================
 Route::post('/register', [RegisteredUserController::class, 'store']);
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
