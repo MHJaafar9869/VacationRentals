@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\OwnerController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,5 +36,5 @@ Route::post('/logout/owner', [App\Http\Controllers\AdminAuth\AuthenticatedSessio
 // ===================End Owner Routes====================
 
 // ===================Edit profile Routes====================
-Route::apiResource('users', \App\Http\Controllers\UserController::class);
-Route::apiResource('owners', \App\Http\Controllers\OwnerController::class);
+Route::put('/users/{id}', [UserController::class, 'updateprofile']);
+Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);

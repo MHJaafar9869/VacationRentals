@@ -11,29 +11,27 @@ class OwnerController extends Controller
 {
     public function updateprofile(Request $request, $id)
     {
-
         $validator = Validator::make($request->all(), [
             'name' => ['required'],
-            'email' => ['required'],
-            'password' => ['nullable'],
+            'email' => ['required', 'email'],
+            'password' => ['nullable', 'min:8'],
             'phone' => ['required'],
             'address' => ['required'],
             'gender' => ['required'],
-            'image' => ['nullable'],
+            'image' => ['nullable', 'image'],
             'company_name' => ['required'],
             'description' => ['required'],
-
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+            return response()->json($validator->errors(), 422);
         }
 
-        $Owner = Owner::findOrFail($id);
+        $owner = Owner::findOrFail($id);
 
         if ($request->hasFile('image')) {
-            if ($Owner->image) {
-                $oldImagePath = public_path('images/user_images/' . $Owner->image);
+            if ($owner->image) {
+                $oldImagePath = public_path('images/owner_images/' . $owner->image);
                 if (file_exists($oldImagePath)) {
                     unlink($oldImagePath);
                 }
@@ -41,25 +39,26 @@ class OwnerController extends Controller
 
             $imageName = time() . '.' . $request->image->extension();
             $request->image->move(public_path('images/user_images'), $imageName);
-            $Owner->image = $imageName;
+            $owner->image = $imageName;
         }
 
-        $Owner->name = $request->name;
-        $Owner->email = $request->email;
-        $Owner->phone = $request->phone;
-        $Owner->gender = $request->gender;
-        $Owner->address = $request->address;
-        $Owner->company_name = $request->company_name;
-        $Owner->description = $request->description;
+        $owner->name = $request->name;
+        $owner->email = $request->email;
+        $owner->phone = $request->phone;
+        $owner->gender = $request->gender;
+        $owner->address = $request->address;
+        $owner->company_name = $request->company_name;
+        $owner->description = $request->description;
 
         if ($request->filled('password')) {
-            $Owner->password = Hash::make($request->password);
+            $owner->password = Hash::make($request->password);
         }
 
-        $Owner->save();
-        if ($Owner->isEmpty()) {
-            return response()->json(['message' => 'Owner not found'], 404);
-        }
-        return response()->json($Owner);
+        $owner->save();
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'owner' => $owner
+        ], 200);
     }
 }
