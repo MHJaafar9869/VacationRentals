@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
+use App\Http\Controllers\LocationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
@@ -42,3 +43,5 @@ Route::post('owners/password/reset', [PasswordResetController::class, 'reset']);
 // ===================Edit profile Routes====================
 Route::put('/users/{id}', [UserController::class, 'updateprofile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
+// ===================location Routes====================
+Route::post('/search-location', [LocationController::class, 'searchLocation']);
