@@ -18,24 +18,64 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): Response
+    public function store(Request $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->string('password')),
-        ]);
-
-        event(new Registered($user));
-
-        Auth::login($user);
-
-        return response()->noContent();
+        try {
+            $request->validate([
+                'name' => ['required', 'string', 'max:20'],
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+                'password' => ['required', Rules\Password::defaults()],
+                'phone' => ['required'],
+                'address' => ['required', 'string', 'max:100'],
+                'gender' => ['required', 'string', 'max:10'],
+                'image' => ['required', 'mimes:jpeg,png,jpg,gif'],
+            ]);
+    
+     
+            $image_path = null;
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $image_path = $image->store('images', 'posts_upload');
+            }
+    
+        
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->string('password')),
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'gender' => $request->gender,
+                'image' => $image_path,
+            ]);
+    
+            // Fire the registered event and create token
+            event(new Registered($user));
+            $token = $user->createToken('auth_token')->plainTextToken;
+    
+            // Log the user in
+            Auth::login($user , true);
+    
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $user,
+            ], 201);
+    
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(), 
+            ], 422);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred during registration',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+    
 }
+
+
