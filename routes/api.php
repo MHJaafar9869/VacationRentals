@@ -38,6 +38,7 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->midd
 
 Route::controller(GmailController::class)->group(function(){
     Route::get('/gmail/login' , 'login')->name('gmail.login');
+    Route::get('/owner/gmail/login',  ('loginOwner'))->name('owner.gmail.login');
     Route::get('/gmail/redirect' , 'redirect')->name('gmail.redirect');
 });
 
