@@ -14,6 +14,9 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('property_id')->nullable();
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->enum('status', ['reserved', 'available', 'confirmed'])->default('reserved');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('property_id')->references('id')->on('properties')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();

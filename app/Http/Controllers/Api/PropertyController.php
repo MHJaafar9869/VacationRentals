@@ -7,12 +7,13 @@ use App\Http\Resources\PropertyResource;
 use App\Http\Resources\PropertyResourse;
 use App\Models\Category;
 use App\Models\Property;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class PropertyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $property = Property::all();
         if (count($property) > 0) {
@@ -129,11 +130,6 @@ class PropertyController extends Controller
         if ($request->has('headline')) {
             $query->where('headline', 'LIKE', '%' . $request->input('headline') . '%');
         }
-    
-        
-    
-       
-    
         if ($request->has('city')) {
             $query->where('city', $request->input('city'));
         }
@@ -146,15 +142,40 @@ class PropertyController extends Controller
         if ($request->has('number_of_rooms')) {
             $query->where('number_of_rooms', '>=', $request->input('number_of_rooms'));
         }
-    
-       
         if ($request->has('amenities')) {
-            $amenities = explode(',', $request->input('amenities')); 
-            $query->where(function($q) use ($amenities) {
+            $amenities = explode(',', $request->input('amenities'));
+            $query->where(function ($q) use ($amenities) {
                 foreach ($amenities as $amenity) {
                     $q->orWhere('amenities', 'LIKE', '%' . trim($amenity) . '%');
                 }
             });
+        }
+
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = Carbon::parse($request->input('start_date'));
+            $endDate = Carbon::parse($request->input('end_date'));
+            $currentDate = Carbon::now();
+
+            if ($startDate->isPast() || $endDate->isPast()) {
+                return response()->json(['message' => 'The selected date range has passed. Please choose future dates.'], 400);
+            }
+            if ($startDate->gt($endDate)) {
+                return response()->json(['message' => 'The start date cannot be after the end date.'], 400);
+            }
+
+            $query->whereDoesntHave('booking', function ($q) use ($startDate, $endDate) {
+                $q->where('status', 'confirmed')
+                    ->where(function ($q) use ($startDate, $endDate) {
+                        $q->whereBetween('start_date', [$startDate, $endDate])
+                            ->orWhereBetween('end_date', [$startDate, $endDate])
+                            ->orWhere(function ($q) use ($startDate, $endDate) {
+                                $q->where('start_date', '<=', $startDate)
+                                    ->where('end_date', '>=', $endDate);
+                            });
+                    });
+            });
+        } else {
+            return response()->json(['message' => 'Please provide both start and end dates.'], 400);
         }
 
         $properties = $query->get();
@@ -165,15 +186,16 @@ class PropertyController extends Controller
 
         return response()->json($properties);
     }
-    public function getpropertycategory($id){
+    public function getpropertycategory($id)
+    {
         $category = Category::find($id);
         if (!$category) {
             return response()->json([
                 'message' => 'Category not found'
             ], 404);
-        } 
+        }
         $property = $category->properties;
-        return propertyResource ::collection($property);
+        return propertyResource::collection($property);
     }
-   
+
 }
