@@ -25,6 +25,8 @@ class User extends Authenticatable
         'address',
         'gender',
         'image',
+        'provider_id',
+        'email_verified_at',
         
     ];
 
