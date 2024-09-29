@@ -21,17 +21,17 @@ class PropertyResource extends JsonResource
             "headline" => $this->headline,
             "description" => $this->description,
             "amenities" => $this->amenities,
-            "number of rooms" => $this->number_of_rooms,
+            "numberOfRooms" => $this->number_of_rooms,
             "image" => $this->image,
             "city" => $this->city,
             "country" => $this->country,
             "address" => $this->address,
-            "night rate" => $this->night_rate,
+            "nightRate" => $this->night_rate,
             "status" => $this->status,
-            "created at" => $this->created_at,
-            "modified at" => $this->updated_at,
+            "createdAt" => $this->created_at,
+            "modifiedAt" => $this->updated_at,
             "category_id" => $this->category_id,
-
+            "property_type" => $this->category->name,
         ];
     }
 }
