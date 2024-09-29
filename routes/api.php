@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\GmailController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -33,7 +34,14 @@ Route::get('/properties/category/{id}', [PropertyController::class, 'getproperty
 Route::post('/register', [RegisteredUserController::class, 'store']);
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
+// ========================Login With Google ================================
 
+Route::controller(GmailController::class)->group(function(){
+    Route::get('/gmail/login' , 'login')->name('gmail.login');
+    Route::get('/gmail/redirect' , 'redirect')->name('gmail.redirect');
+});
+
+// ===================End Auth Routes====================
 // ===================Owner Routes====================
 
 Route::post('/register/owner', [App\Http\Controllers\AdminAuth\RegisteredUserController::class, 'store']);
