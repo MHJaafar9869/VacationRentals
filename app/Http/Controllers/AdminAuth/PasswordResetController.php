@@ -41,4 +41,41 @@ class PasswordResetController extends Controller
         return $status === Password::PASSWORD_RESET
                     ? response()->json(['message' => __($status)], 200)
                     : response()->json(['message' => __($status)], 400);
-    }}
+    }
+    public function sendResetLinkEmailUser(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+    
+        $status = Password::broker('users')->sendResetLink($request->only('email'));
+    
+        return $status === Password::RESET_LINK_SENT
+                    ? response()->json(['message' => __($status)], 200)
+                    : response()->json(['message' => __($status)], 400);
+    }
+    
+    public function resetUser(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string|confirmed|min:8',
+            'token' => 'required',
+        ]);
+    
+        $status = Password::broker('users')->reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->password = bcrypt($password);
+                $user->save();
+            }
+        );
+    
+        return $status === Password::PASSWORD_RESET
+                    ? response()->json(['message' => __($status)], 200)
+                    : response()->json(['message' => __($status)], 400);
+    }
+
+
+
+
+
+}
