@@ -43,7 +43,7 @@ class GmailController extends Controller
 
             $token = $owner->createToken('YourAppName')->plainTextToken;
 
-            return redirect('http://localhost:4200/login?token=' . $token . '&name=' . urlencode($owner->name) . '&email=' . urlencode($owner->email) . '&role=owner');
+            return redirect('http://localhost:4200/login/owner?token=' . $token . '&name=' . urlencode($owner->name) . '&email=' . urlencode($owner->email) . '&role=owner');
         } else {
             $user = User::updateOrCreate([
                 'provider_id' => $googleUser->getId(),

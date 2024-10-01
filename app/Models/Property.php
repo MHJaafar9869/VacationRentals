@@ -20,6 +20,8 @@ class Property extends Model
         "night_rate",
         "status",
         "category_id",
+        'latitude',
+        'longitude',
     ];
 
     public function category()
