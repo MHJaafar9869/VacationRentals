@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GmailController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\UserController;
@@ -61,3 +62,9 @@ Route::put('/users/{id}', [UserController::class, 'updateprofile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
 // ===================location Routes====================
 Route::post('/search-location', [LocationController::class, 'searchLocation']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/favorites', [FavoriteController::class, 'addToFavorites']);
+    Route::delete('/favorites', [FavoriteController::class, 'removeFromFavorites']);
+    Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
+});
