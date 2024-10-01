@@ -13,9 +13,7 @@ class Property extends Model
         "name",
         "headline",
         "description",
-        "amenities",
         "number_of_rooms",
-        "image",
         "city",
         "country",
         "address",
@@ -37,5 +35,14 @@ class Property extends Model
     public function booking()
     {
         return $this->hasMany(Booking::class);
+    }
+    public function images()
+    {
+        return $this->hasMany(PropertyImage::class);
+    }
+
+    public function amenities()
+    {
+        return $this->hasMany(PropertyAmenity::class);
     }
 }
