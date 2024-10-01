@@ -15,9 +15,9 @@ return new class extends Migration {
             $table->string('name');
             $table->string('headline');
             $table->longText('description');
-            $table->longText('amenities');
+            
             $table->integer('number_of_rooms');
-            $table->string('image');
+            
             $table->string('city');
             $table->string('country');
             $table->string('address');

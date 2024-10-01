@@ -23,6 +23,7 @@ class Owner extends Authenticatable
         'role',
         'description',
         'company_name',
+        'provider_id',
     ];
 
     public function properties()

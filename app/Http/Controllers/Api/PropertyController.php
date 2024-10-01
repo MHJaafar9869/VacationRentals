@@ -29,9 +29,9 @@ class PropertyController extends Controller
             'name' => 'required | min:10 | max:255',
             'headline' => 'required | min:10 | max:255',
             'description' => 'required | min:10',
-            'amenities' => 'required | min:10',
+            
             'number_of_rooms' => 'required | integer | min:1',
-            'image' => 'required',
+
             'city' => 'required',
             'country' => 'required',
             'address' => 'required',
@@ -50,15 +50,22 @@ class PropertyController extends Controller
             'name' => $request->name,
             'headline' => $request->headline,
             'description' => $request->description,
-            'amenities' => $request->amenities,
             'number_of_rooms' => $request->number_of_rooms,
-            'image' => $request->image,
             'city' => $request->city,
             'country' => $request->country,
             'address' => $request->address,
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
         ]);
+        // Store multiple images
+        foreach ($request->images as $image) {
+            $property->images()->create(['image_path' => $image]);
+        }
+
+        // Store multiple amenities
+        foreach ($request->amenities as $amenity) {
+            $property->amenities()->create(['amenity' => $amenity]);
+        }
         return response()->json(
             [
                 'message' => 'Property added successfully',
@@ -66,9 +73,12 @@ class PropertyController extends Controller
             ],
             200
         );
+        return response()->json($property->load(['images', 'amenities']));
     }
-    public function show(Property $property)
+    public function show(Property $property,$id)
     {
+        $property = Property::with(['images', 'amenities'])->findOrFail($id);
+        return response()->json($property);
         return new PropertyResource($property);
     }
     public function update(Request $request, Property $property)
@@ -215,5 +225,4 @@ class PropertyController extends Controller
         $property = $category->properties;
         return propertyResource::collection($property);
     }
-
 }
