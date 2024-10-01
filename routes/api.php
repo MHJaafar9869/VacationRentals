@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\AdminAuth\PasswordResetController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PropertyController;
@@ -62,3 +63,11 @@ Route::put('/users/{id}', [UserController::class, 'updateProfile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 // ===================location Routes====================
 Route::post('/search-location', [LocationController::class, 'searchLocation']);
+
+// ===================Admin Routes====================
+Route::controller(AdminController::class)->prefix('admin')->group(function(){
+   Route::get('/users', 'users'); 
+   Route::get('/owners', 'owners');
+   Route::get('/properties', 'properties');
+});
+// ===================End Admin Routes====================
