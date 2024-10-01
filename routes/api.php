@@ -40,10 +40,10 @@ Route::post('/password/reset', [PasswordResetController::class, 'resetUser']);
 
 // ========================Login With Google ================================
 
-Route::controller(GmailController::class)->group(function(){
-    Route::get('/gmail/login' , 'login')->name('gmail.login');
-    Route::get('/owner/gmail/login',  ('loginOwner'))->name('owner.gmail.login');
-    Route::get('/gmail/redirect' , 'redirect')->name('gmail.redirect');
+Route::controller(GmailController::class)->group(function () {
+    Route::get('/gmail/login', 'login')->name('gmail.login');
+    Route::get('/owner/gmail/login', ('loginOwner'))->name('owner.gmail.login');
+    Route::get('/gmail/redirect', 'redirect')->name('gmail.redirect');
 });
 
 // ===================End Auth Routes====================
