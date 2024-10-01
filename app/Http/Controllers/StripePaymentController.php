@@ -32,7 +32,6 @@ class StripePaymentController extends Controller
         $end_date = Carbon::parse('Y-m-d', $request->input('end_date'));
         $days = $end_date->diffInDays($start_date);
 
-        $amount = $request->input('amount');
         $currency = 'usd';
         $property = Property::find($id);
 
@@ -56,13 +55,12 @@ class StripePaymentController extends Controller
             'success_url' => env('FRONTEND_URL') . '/success',
             'cancel_url' => env('FRONTEND_URL') . '/cancel',
             'payment_intent_data' => [
-                'application_fee_amount' => $amount * 0.10,
+                'application_fee_amount' => ($property->night_rate * $days) * 0.10,
                 'transfer_data' => [
                     'destination' => $hostStripeAccountId,
                 ],
             ],
         ]);
-        $booking = new Booking();
 
 
         return response()->json(['id' => $checkoutSession->id]);

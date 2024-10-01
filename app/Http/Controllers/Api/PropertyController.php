@@ -84,10 +84,10 @@ class PropertyController extends Controller
     public function update(Request $request, Property $property)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required | min:10 | max:255',
-            'headline' => 'required | min:10 | max:255',
-            'description' => 'required | min:10',
-            'amenities' => 'required | min:10',
+            'name' => 'required | max:255',
+            'headline' => 'required | max:255',
+            'description' => 'required',
+            'amenities' => 'required',
             'number_of_rooms' => 'required | integer | min:1',
             'image' => 'required',
             'city' => 'required',
