@@ -28,7 +28,7 @@ class PropertyController extends Controller
             'name' => 'required | min:10 | max:255',
             'headline' => 'required | min:10 | max:255',
             'description' => 'required | min:10',
-            
+
             'number_of_rooms' => 'required | integer | min:1',
 
             'city' => 'required',
@@ -36,6 +36,8 @@ class PropertyController extends Controller
             'address' => 'required',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -55,6 +57,8 @@ class PropertyController extends Controller
             'address' => $request->address,
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
         ]);
         // Store multiple images
         foreach ($request->images as $image) {
@@ -74,7 +78,7 @@ class PropertyController extends Controller
         );
         return response()->json($property->load(['images', 'amenities']));
     }
-    public function show(Property $property,$id)
+    public function show( $id)
     {
         $property = Property::with(['images', 'amenities'])->findOrFail($id);
         return response()->json($property);
