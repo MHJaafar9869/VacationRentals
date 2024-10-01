@@ -13,15 +13,15 @@ class Property extends Model
         "name",
         "headline",
         "description",
-        "amenities",
         "number_of_rooms",
-        "image",
         "city",
         "country",
         "address",
         "night_rate",
         "status",
         "category_id",
+        'latitude',
+        'longitude',
     ];
 
     public function category()
@@ -38,4 +38,18 @@ class Property extends Model
     {
         return $this->hasMany(Booking::class);
     }
+    public function images()
+    {
+        return $this->hasMany(PropertyImage::class);
+    }
+
+    public function amenities()
+    {
+        return $this->hasMany(PropertyAmenity::class);
+    }
+    public function favoritedByUsers()
+{
+    return $this->hasMany(Favorite::class);
+}
+
 }

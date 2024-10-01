@@ -16,9 +16,9 @@ class GmailController extends Controller
 
     public function loginOwner() {
         $state = ['role' => 'owner'];
-        
+
         return Socialite::driver('google')
-            ->with(['state' => json_encode($state)]) 
+            ->with(['state' => json_encode($state)])
             ->stateless()
             ->redirect();
     }
@@ -27,7 +27,7 @@ class GmailController extends Controller
         $googleUser = Socialite::driver('google')->stateless()->user();
 
         $state = json_decode($request->input('state'), true);
-        $role = $state['role'] ?? 'user'; 
+        $role = $state['role'] ?? 'user';
 
         if ($role === 'owner') {
             $owner = Owner::updateOrCreate([
@@ -40,7 +40,7 @@ class GmailController extends Controller
 
             $token = $owner->createToken('YourAppName')->plainTextToken;
 
-            return redirect('http://localhost:4200/login?token=' . $token . '&name=' . urlencode($owner->name) . '&email=' . urlencode($owner->email) . '&role=owner');
+            return redirect('http://localhost:4200/login/owner?token=' . $token . '&name=' . urlencode($owner->name) . '&email=' . urlencode($owner->email) . '&role=owner');
         } else {
             $user = User::updateOrCreate([
                 'provider_id' => $googleUser->getId(),

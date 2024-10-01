@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\AdminAuth\PasswordResetController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GmailController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\UserController;
@@ -61,3 +63,16 @@ Route::put('/users/{id}', [UserController::class, 'updateprofile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
 // ===================location Routes====================
 Route::post('/search-location', [LocationController::class, 'searchLocation']);
+
+// ===================Admin Routes====================
+Route::controller(AdminController::class)->prefix('admin')->group(function(){
+   Route::get('/users', 'users'); 
+   Route::get('/owners', 'owners');
+   Route::get('/properties', 'properties');
+});
+// ===================End Admin Routes====================
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/favorites', [FavoriteController::class, 'addToFavorites']);
+    Route::delete('/favorites', [FavoriteController::class, 'removeFromFavorites']);
+    Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
+});
