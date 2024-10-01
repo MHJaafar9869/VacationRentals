@@ -15,7 +15,7 @@ class LocationController extends Controller
             return response()->json(['error' => 'Query is required'], 400);
         }
 
-        $apiKey = 'AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg';
+        $apiKey = 'AIzaSyDPcD8ze4UcLnj5WOCqXTJW0TUvqIODioA';
 
         $response = Http::get("https://maps.googleapis.com/maps/api/place/autocomplete/json", [
             'input' => $query,
