@@ -38,6 +38,10 @@ class PropertyController extends Controller
             'category_id' => 'required',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'images' => 'required|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'amenities' => 'required|array',
+            'amenities.*' => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -61,10 +65,18 @@ class PropertyController extends Controller
             'longitude' => $request->longitude,
         ]);
         // Store multiple images
-        foreach ($request->images as $image) {
-            $property->images()->create(['image_path' => $image]);
-        }
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                // رفع الصورة إلى المسار المحدد
+                $imagePath = $image->store('images/properties', 'public');
 
+                // إنشاء المسار العام (URL) باستخدام asset
+                $imageUrl = asset('storage/' . $imagePath);
+
+                // حفظ المسار في قاعدة البيانات
+                $property->images()->create(['image_path' => $imageUrl]);
+            }
+        }
         // Store multiple amenities
         foreach ($request->amenities as $amenity) {
             $property->amenities()->create(['amenity' => $amenity]);
@@ -72,18 +84,19 @@ class PropertyController extends Controller
         return response()->json(
             [
                 'message' => 'Property added successfully',
-                "data" => new PropertyResource($property)
+                "data" => new PropertyResource($property->load(['images', 'amenities']))
             ],
             200
         );
-        return response()->json($property->load(['images', 'amenities']));
+        //  return response()->json($property->load(['images', 'amenities']));
     }
-    public function show( $id)
+    public function show($id)
     {
         $property = Property::with(['images', 'amenities'])->findOrFail($id);
         return response()->json($property);
         return new PropertyResource($property);
     }
+
     public function update(Request $request, Property $property)
     {
         $validator = Validator::make($request->all(), [
@@ -98,6 +111,10 @@ class PropertyController extends Controller
             'address' => 'required',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
+            'images' => 'required|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'amenities' => 'required|array',
+            'amenities.*' => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -120,13 +137,33 @@ class PropertyController extends Controller
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
         ]);
-        return response()->json(
-            [
-                'message' => 'Property updated successfully',
-                "data" => new PropertyResource($property)
-            ],
-            200
-        );
+        // Update multiple images if provided
+    if ($request->hasFile('images')) {
+        // Delete existing images first (optional)
+        $property->images()->delete();
+
+        foreach ($request->file('images') as $image) {
+            $imagePath = $image->store('images/properties', 'public');
+            $imageUrl = asset('storage/' . $imagePath);
+            $property->images()->create(['image_path' => $imageUrl]);
+        }
+    }
+
+    // Update amenities
+    if ($request->has('amenities')) {
+        $property->amenities()->delete(); // Delete existing amenities
+        foreach ($request->amenities as $amenity) {
+            $property->amenities()->create(['amenity' => $amenity]);
+        }
+    }
+
+    return response()->json(
+        [
+            'message' => 'Property updated successfully',
+            'data' => new PropertyResource($property->load(['images', 'amenities']))
+        ],
+        200
+    );
     }
     public function destroy(Property $property)
     {
