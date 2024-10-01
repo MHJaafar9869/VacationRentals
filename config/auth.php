@@ -44,6 +44,11 @@ return [
             'driver' => 'session',
             'provider' => 'owners',
         ],
+
+        'api' => [
+        'driver' => 'token',  // or 'sanctum', 'passport', depending on your setup
+        'provider' => 'users',
+        'hash' => false,]
     ],
 
     /*
