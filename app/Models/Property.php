@@ -47,4 +47,9 @@ class Property extends Model
     {
         return $this->hasMany(PropertyAmenity::class);
     }
+    public function favoritedByUsers()
+{
+    return $this->hasMany(Favorite::class);
+}
+
 }
