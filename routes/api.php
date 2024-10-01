@@ -24,8 +24,9 @@ Route::apiResource("property", PropertyController::class);
 // ################ //
 // >Route For Stripe< //
 Route::post('/payment', [StripePaymentController::class, 'createPaymentIntent']);
-// ################ //
-
+Route::post('/owner/{id}/register/stripe-account', [StripePaymentController::class, 'ownerCreateAccount']);
+Route::post('/create-checkout-session', [StripePaymentController::class, 'createCheckoutSession']);
+// ================== //
 Route::get('/properties/search', [PropertyController::class, 'search']);
 
 Route::get('/properties/category/{id}', [PropertyController::class, 'getpropertycategory']);
@@ -36,9 +37,9 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
 // ========================Login With Google ================================
 
-Route::controller(GmailController::class)->group(function(){
-    Route::get('/gmail/login' , 'login')->name('gmail.login');
-    Route::get('/gmail/redirect' , 'redirect')->name('gmail.redirect');
+Route::controller(GmailController::class)->group(function () {
+    Route::get('/gmail/login', 'login')->name('gmail.login');
+    Route::get('/gmail/redirect', 'redirect')->name('gmail.redirect');
 });
 
 // ===================End Auth Routes====================
@@ -53,7 +54,7 @@ Route::post('owners/password/reset', [PasswordResetController::class, 'reset']);
 // ===================End Owner Routes====================
 
 // ===================Edit profile Routes====================
-Route::put('/users/{id}', [UserController::class, 'updateprofile']);
-Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
+Route::put('/users/{id}', [UserController::class, 'updateProfile']);
+Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 // ===================location Routes====================
 Route::post('/search-location', [LocationController::class, 'searchLocation']);

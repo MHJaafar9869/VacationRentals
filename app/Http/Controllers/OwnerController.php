@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 
 class OwnerController extends Controller
 {
-    public function updateprofile(Request $request, $id)
+    public function updateProfile(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
             'name' => ['required'],

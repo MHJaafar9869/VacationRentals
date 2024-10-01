@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Property;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class PropertyController extends Controller
@@ -123,38 +124,52 @@ class PropertyController extends Controller
     }
     public function search(Request $request)
     {
-        $query = Property::query();
-        if ($request->has('name')) {
-            $query->where('name', 'like', '%' . $request->input('name') . '%');
-        }
-        if ($request->has('headline')) {
-            $query->where('headline', 'LIKE', '%' . $request->input('headline') . '%');
-        }
-        if ($request->has('city')) {
-            $query->where('city', $request->input('city'));
-        }
-        if ($request->has('country')) {
-            $query->where('country', $request->input('country'));
-        }
-        if ($request->has('address')) {
-            $query->where('address', $request->input('address'));
-        }
-        if ($request->has('number_of_rooms')) {
-            $query->where('number_of_rooms', '>=', $request->input('number_of_rooms'));
-        }
-        if ($request->has('amenities')) {
-            $amenities = explode(',', $request->input('amenities'));
-            $query->where(function ($q) use ($amenities) {
-                foreach ($amenities as $amenity) {
-                    $q->orWhere('amenities', 'LIKE', '%' . trim($amenity) . '%');
+        $query = DB::table('properties')
+            ->leftJoin('bookings', 'properties.id', '=', 'bookings.property_id') // Join the booking table
+            ->select('properties.*')
+            ->where(function ($query) use ($request) {
+                // Handle other filters like city, number of rooms, etc.
+                if ($request->has('name')) {
+                    $query->where('properties.name', 'like', '%' . $request->input('name') . '%');
                 }
+                if ($request->has('city')) {
+                    $query->where('properties.city', $request->input('city'));
+                }
+                if ($request->has('number_of_rooms')) {
+                    $query->where('properties.number_of_rooms', '>=', $request->input('number_of_rooms'));
+                }
+                // if ($request->has('name')) {
+                //     $query->where('name', 'like', '%' . $request->input('name') . '%');
+                // }
+                // if ($request->has('headline')) {
+                //     $query->where('headline', 'LIKE', '%' . $request->input('headline') . '%');
+                // }
+                // if ($request->has('city')) {
+                //     $query->where('city', $request->input('city'));
+                // }
+                // if ($request->has('country')) {
+                //     $query->where('country', $request->input('country'));
+                // }
+                // if ($request->has('address')) {
+                //     $query->where('address', $request->input('address'));
+                // }
+                // if ($request->has('number_of_rooms')) {
+                //     $query->where('number_of_rooms', '>=', $request->input('number_of_rooms'));
+                // }
+                // if ($request->has('amenities')) {
+                //     $amenities = explode(',', $request->input('amenities'));
+                //     $query->where(function ($q) use ($amenities) {
+                //         foreach ($amenities as $amenity) {
+                //             $q->orWhere('amenities', 'LIKE', '%' . trim($amenity) . '%');
+                //         }
+                //     });
+                // }
+                //   فوزي لو حبيت ممكن تزودهم .
             });
-        }
 
         if ($request->has('start_date') && $request->has('end_date')) {
             $startDate = Carbon::parse($request->input('start_date'));
             $endDate = Carbon::parse($request->input('end_date'));
-            $currentDate = Carbon::now();
 
             if ($startDate->isPast() || $endDate->isPast()) {
                 return response()->json(['message' => 'The selected date range has passed. Please choose future dates.'], 400);
@@ -162,19 +177,22 @@ class PropertyController extends Controller
             if ($startDate->gt($endDate)) {
                 return response()->json(['message' => 'The start date cannot be after the end date.'], 400);
             }
+            if ($endDate->lt($startDate)) {
+                return response()->json(['message' => 'The end date cannot be before the start date.'], 400);
+            }
 
-            $query->whereDoesntHave('booking', function ($q) use ($startDate, $endDate) {
-                $q->where('status', 'confirmed')
-                    ->where(function ($q) use ($startDate, $endDate) {
-                        $q->whereBetween('start_date', [$startDate, $endDate])
-                            ->orWhereBetween('end_date', [$startDate, $endDate])
-                            ->orWhere(function ($q) use ($startDate, $endDate) {
-                                $q->where('start_date', '<=', $startDate)
-                                    ->where('end_date', '>=', $endDate);
+            $query->where(function ($query) use ($startDate, $endDate) {
+                $query->whereNull('bookings.id')
+                    ->orWhere(function ($query) use ($startDate, $endDate) {
+                        $query->where('bookings.status', '!=', 'confirmed')
+                            ->orWhere(function ($query) use ($startDate, $endDate) {
+                                $query->where('bookings.end_date', '<', $startDate)
+                                    ->orWhere('bookings.start_date', '>', $endDate);
                             });
                     });
             });
         } else {
+
             return response()->json(['message' => 'Please provide both start and end dates.'], 400);
         }
 
