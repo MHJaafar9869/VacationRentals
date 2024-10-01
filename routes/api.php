@@ -62,7 +62,7 @@ Route::post('owners/password/reset', [PasswordResetController::class, 'reset']);
 Route::put('/users/{id}', [UserController::class, 'updateprofile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
 // ===================location Routes====================
-Route::post('/search-location', [LocationController::class, 'searchLocation']);
+//Route::post('/search-location', [LocationController::class, 'searchLocation']);
 
 // ===================Admin Routes====================
 Route::controller(AdminController::class)->prefix('admin')->group(function(){
