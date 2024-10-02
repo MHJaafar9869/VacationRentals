@@ -66,11 +66,15 @@ Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 // Route::post('/search-location', [LocationController::class, 'searchLocation']);
 
 // ===================Admin Routes====================
-Route::controller(AdminController::class)->prefix('admin')->middleware('admin')->group(function () {
-    Route::get('/users', 'users');
-    Route::get('/owners', 'owners');
-    Route::get('/properties', 'properties');
-});
+Route::controller(AdminController::class)
+    ->prefix('admin')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('/users', 'users');
+        Route::get('/owners', 'owners');
+        Route::get('/properties', 'properties');
+    });
+
 // ===================End Admin Routes====================
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites', [FavoriteController::class, 'addToFavorites']);
