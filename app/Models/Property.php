@@ -13,7 +13,8 @@ class Property extends Model
         "name",
         "headline",
         "description",
-        "number_of_rooms",
+        "bedrooms",
+        "bathrooms",
         "city",
         "country",
         "address",
@@ -38,18 +39,18 @@ class Property extends Model
     {
         return $this->hasMany(Booking::class);
     }
-    public function images()
+    public function propertyImages()
     {
         return $this->hasMany(PropertyImage::class);
     }
 
-    public function amenities()
+    public function propertyAmenities()
     {
-        return $this->hasMany(PropertyAmenity::class);
+        return $this->belongsToMany(PropertyAmenity::class, "property_amenities", 'property_id', 'amenity_id');
     }
-    public function favoritedByUsers()
-{
-    return $this->hasMany(Favorite::class);
-}
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
 
 }

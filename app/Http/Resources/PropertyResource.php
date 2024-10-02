@@ -14,15 +14,15 @@ class PropertyResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // return parent::toArray($request);
         return [
             "id" => $this->id,
             "name" => $this->name,
             "headline" => $this->headline,
             "description" => $this->description,
-            "amenities" => $this->amenities,
-            "numberOfRooms" => $this->number_of_rooms,
-            "images" => $this->images,
+            "property_amenities" => $this->property_amenities,
+            "bedrooms" => $this->bedrooms,
+            "bathrooms" => $this->bathrooms,
+            "image_path" => $this->property_images,
             "city" => $this->city,
             "country" => $this->country,
             "address" => $this->address,
@@ -30,7 +30,7 @@ class PropertyResource extends JsonResource
             "status" => $this->status,
             "createdAt" => $this->created_at,
             "modifiedAt" => $this->updated_at,
-            "category_id" => $this->category_id,
+            "category_id" => $this->category->id,
             "property_type" => $this->category->name,
         ];
     }
