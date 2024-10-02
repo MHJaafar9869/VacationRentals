@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Validator;
 
 class PropertyController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
         $property = Property::all();
         if (count($property) > 0) {
@@ -40,7 +40,10 @@ class PropertyController extends Controller
             'category_id' => 'required',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'amenities' => 'required',
+            'images' => 'required|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'property_amenities' => 'required|array',
+            'property_amenities.*' => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -65,52 +68,52 @@ class PropertyController extends Controller
             'longitude' => $request->longitude,
         ]);
 
-        // $propertyAmenity = PropertyAmenity::create([
-        //     'property_id' => $property->id,
-        //     'name' => [$request->name],
-        // ]);
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $imagePath = $image->store('images/properties', 'public');
 
-        foreach ($request->images as $image) {
-            $property->propertyImages()->create(['image_path' => $image]);
+                $imageUrl = asset('storage/' . $imagePath);
+
+                $property->propertyImages()->create(['image_path' => $imageUrl]);
+            }
         }
 
-        foreach ($request->amenities as $amenity) {
-            $property->propertyAmenities()->create(['amenity_id' => $amenity]);
+        foreach ($request->property_amenities as $amenity_id) {
+            $property->propertyAmenities()->create(['amenity_id' => $amenity_id]);
         }
 
         return response()->json(
             [
                 'message' => 'Property added successfully',
                 "data" => [
-                    new PropertyResource($property),
-                    $property->load(['images', 'amenities'])
+                    new PropertyResource($property->load(['propertyImages', 'propertyAmenities'])),
                 ]
             ],
             200
         );
-        // return response()->json($property->load(['images', 'amenities']));
     }
     public function show($id)
     {
-        $property = Property::with(['images', 'amenities'])->findOrFail($id);
+        $property = Property::with(['images', 'amenities'])->find($id);
         return response()->json(
             [
                 'message' => 'Property added successfully',
                 "data" => [
                     new PropertyResource($property),
-                    $property->load(['images', 'amenities'])
+                    // $property->propertyImages()->load(['images']),
+                    // $property->propertyAmenities()->load(['amenity'])
                 ]
             ],
             200
         );
     }
+
     public function update(Request $request, Property $property)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required | max:255',
             'headline' => 'required | max:255',
             'description' => 'required',
-            'amenities' => 'required',
             'number_of_rooms' => 'required | integer | min:1',
             'image' => 'required',
             'city' => 'required',
@@ -118,6 +121,10 @@ class PropertyController extends Controller
             'address' => 'required',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
+            'images' => 'required|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'amenities' => 'required|array',
+            'amenities.*' => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -139,10 +146,28 @@ class PropertyController extends Controller
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
         ]);
+
+        if ($request->hasFile('images')) {
+            $property->images()->delete();
+
+            foreach ($request->file('images') as $image) {
+                $imagePath = $image->store('images/properties', 'public');
+                $imageUrl = asset('storage/' . $imagePath);
+                $property->images()->create(['image_path' => $imageUrl]);
+            }
+        }
+
+        if ($request->has('amenities')) {
+            $property->amenities()->delete();
+            foreach ($request->amenities as $amenity) {
+                $property->amenities()->create(['amenity' => $amenity]);
+            }
+        }
+
         return response()->json(
             [
                 'message' => 'Property updated successfully',
-                "data" => [new PropertyResource($property)]
+                'data' => new PropertyResource($property->load(['images', 'amenities']))
             ],
             200
         );
@@ -160,15 +185,17 @@ class PropertyController extends Controller
             ->leftJoin('bookings', 'properties.id', '=', 'bookings.property_id') // Join the booking table
             ->select('properties.*')
             ->where(function ($query) use ($request) {
-                // Handle other filters like city, number of rooms, etc.
                 if ($request->has('name')) {
                     $query->where('properties.name', 'like', '%' . $request->input('name') . '%');
                 }
                 if ($request->has('city')) {
                     $query->where('properties.city', $request->input('city'));
                 }
-                if ($request->has('number_of_rooms')) {
-                    $query->where('properties.number_of_rooms', '>=', $request->input('number_of_rooms'));
+                if ($request->has('bedrooms')) {
+                    $query->where('properties.bedrooms', '>=', $request->input('bedrooms'));
+                }
+                if ($request->has(key: 'bathrooms')) {
+                    $query->where('properties.bathrooms', '>=', $request->input('bathrooms'));
                 }
                 // if ($request->has('name')) {
                 //     $query->where('name', 'like', '%' . $request->input('name') . '%');
@@ -224,7 +251,6 @@ class PropertyController extends Controller
                     });
             });
         } else {
-
             return response()->json(['message' => 'Please provide both start and end dates.'], 400);
         }
 

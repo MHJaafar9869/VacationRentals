@@ -13,7 +13,8 @@ class Property extends Model
         "name",
         "headline",
         "description",
-        "number_of_rooms",
+        "bedrooms",
+        "bathrooms",
         "city",
         "country",
         "address",
@@ -45,7 +46,7 @@ class Property extends Model
 
     public function propertyAmenities()
     {
-        return $this->hasMany(PropertyAmenity::class);
+        return $this->belongsToMany(PropertyAmenity::class, "property_amenities", 'property_id', 'amenity_id');
     }
     public function favorites()
     {
