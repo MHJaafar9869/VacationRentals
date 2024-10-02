@@ -12,6 +12,6 @@ class Amenity extends Model
 
     public function propertyAmenity()
     {
-        return $this->belongsToMany(PropertyAmenity::class);
+        return $this->belongsToMany(PropertyAmenity::class , 'property_amenities', 'amenity_id', 'property_id');
     }
 }

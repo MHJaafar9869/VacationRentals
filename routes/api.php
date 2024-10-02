@@ -23,6 +23,8 @@ Route::apiResource('/categories', CategoryController::class);
 
 // >Property Route< //
 Route::apiResource("property", PropertyController::class);
+Route::post('property/{id}/amenities', [PropertyController::class, 'storeAmenities']);
+Route::post('property/{id}/images', [PropertyController::class, 'storeImages']);
 // ################ //
 // >Route For Stripe< //
 Route::post('/payment', [StripePaymentController::class, 'createPaymentIntent']);
