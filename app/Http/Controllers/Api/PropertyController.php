@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PropertyResource;
 use App\Http\Resources\PropertyResourse;
+use App\Models\Amenity;
 use App\Models\Category;
 use App\Models\Property;
+use App\Models\PropertyAmenity;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,9 +31,8 @@ class PropertyController extends Controller
             'name' => 'required | min:10 | max:255',
             'headline' => 'required | min:10 | max:255',
             'description' => 'required | min:10',
-
-            'number_of_rooms' => 'required | integer | min:1',
-
+            'bedrooms' => 'required | integer | min:1',
+            'bathrooms' => 'required | integer | min:1',
             'city' => 'required',
             'country' => 'required',
             'address' => 'required',
@@ -39,6 +40,7 @@ class PropertyController extends Controller
             'category_id' => 'required',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'amenities' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -52,7 +54,8 @@ class PropertyController extends Controller
             'name' => $request->name,
             'headline' => $request->headline,
             'description' => $request->description,
-            'number_of_rooms' => $request->number_of_rooms,
+            'bedrooms' => $request->bedrooms,
+            'bathrooms' => $request->bathrooms,
             'city' => $request->city,
             'country' => $request->country,
             'address' => $request->address,
@@ -61,29 +64,45 @@ class PropertyController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
         ]);
-        // Store multiple images
+
+        // $propertyAmenity = PropertyAmenity::create([
+        //     'property_id' => $property->id,
+        //     'name' => [$request->name],
+        // ]);
+
         foreach ($request->images as $image) {
-            $property->images()->create(['image_path' => $image]);
+            $property->propertyImages()->create(['image_path' => $image]);
         }
 
-        // Store multiple amenities
         foreach ($request->amenities as $amenity) {
-            $property->amenities()->create(['amenity' => $amenity]);
+            $property->propertyAmenities()->create(['amenity_id' => $amenity]);
         }
+
         return response()->json(
             [
                 'message' => 'Property added successfully',
-                "data" => new PropertyResource($property)
+                "data" => [
+                    new PropertyResource($property),
+                    $property->load(['images', 'amenities'])
+                ]
             ],
             200
         );
-        return response()->json($property->load(['images', 'amenities']));
+        // return response()->json($property->load(['images', 'amenities']));
     }
-    public function show( $id)
+    public function show($id)
     {
         $property = Property::with(['images', 'amenities'])->findOrFail($id);
-        return response()->json($property);
-        return new PropertyResource($property);
+        return response()->json(
+            [
+                'message' => 'Property added successfully',
+                "data" => [
+                    new PropertyResource($property),
+                    $property->load(['images', 'amenities'])
+                ]
+            ],
+            200
+        );
     }
     public function update(Request $request, Property $property)
     {
@@ -114,7 +133,6 @@ class PropertyController extends Controller
             'description' => $request->description,
             'amenities' => $request->amenities,
             'number_of_rooms' => $request->number_of_rooms,
-            'image' => $request->image,
             'city' => $request->city,
             'country' => $request->country,
             'address' => $request->address,
@@ -124,7 +142,7 @@ class PropertyController extends Controller
         return response()->json(
             [
                 'message' => 'Property updated successfully',
-                "data" => new PropertyResource($property)
+                "data" => [new PropertyResource($property)]
             ],
             200
         );

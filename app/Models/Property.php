@@ -38,18 +38,18 @@ class Property extends Model
     {
         return $this->hasMany(Booking::class);
     }
-    public function images()
+    public function propertyImages()
     {
         return $this->hasMany(PropertyImage::class);
     }
 
-    public function amenities()
+    public function propertyAmenities()
     {
         return $this->hasMany(PropertyAmenity::class);
     }
-    public function favoritedByUsers()
-{
-    return $this->hasMany(Favorite::class);
-}
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
 
 }
