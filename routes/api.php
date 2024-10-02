@@ -41,10 +41,10 @@ Route::post('/password/reset', [PasswordResetController::class, 'resetUser']);
 
 // ========================Login With Google ================================
 
-Route::controller(GmailController::class)->group(function(){
-    Route::get('/gmail/login' , 'login')->name('gmail.login');
-    Route::get('/owner/gmail/login',  ('loginOwner'))->name('owner.gmail.login');
-    Route::get('/gmail/redirect' , 'redirect')->name('gmail.redirect');
+Route::controller(GmailController::class)->group(function () {
+    Route::get('/gmail/login', 'login')->name('gmail.login');
+    Route::get('/owner/gmail/login', ('loginOwner'))->name('owner.gmail.login');
+    Route::get('/gmail/redirect', 'redirect')->name('gmail.redirect');
 });
 
 // ===================End Auth Routes====================
@@ -65,11 +65,15 @@ Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
 // Route::post('/search-location', [LocationController::class, 'searchLocation']);
 
 // ===================Admin Routes====================
-Route::controller(AdminController::class)->prefix('admin')->middleware('admin')->group(function(){
-   Route::get('/users', 'users'); 
-   Route::get('/owners', 'owners');
-   Route::get('/properties', 'properties');
-});
+Route::controller(AdminController::class)
+    ->prefix('admin')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        Route::get('/users', 'users');
+        Route::get('/owners', 'owners');
+        Route::get('/properties', 'properties');
+    });
+
 // ===================End Admin Routes====================
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites', [FavoriteController::class, 'addToFavorites']);
