@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PropertyResource;
 use App\Http\Resources\PropertyResourse;
@@ -9,6 +10,7 @@ use App\Models\Amenity;
 use App\Models\Category;
 use App\Models\Property;
 use App\Models\PropertyAmenity;
+use App\Models\PropertyImage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,8 +30,8 @@ class PropertyController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required | min:10 | max:255',
-            'headline' => 'required | min:10 | max:255',
+            'name' => 'required | min:5 | max:255',
+            'headline' => 'required | min:5 | max:255',
             'description' => 'required | min:10',
             'bedrooms' => 'required | integer | min:1',
             'bathrooms' => 'required | integer | min:1',
@@ -40,11 +42,7 @@ class PropertyController extends Controller
             'category_id' => 'required',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-            'property_amenities' => 'required|array',
-            'property_amenities.*' => 'string|max:255',
-        ]);
+            ]);
 
         if ($validator->fails()) {
             return response()->json([
@@ -68,30 +66,60 @@ class PropertyController extends Controller
             'longitude' => $request->longitude,
         ]);
 
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $imagePath = $image->store('images/properties', 'public');
+      
 
-                $imageUrl = asset('storage/' . $imagePath);
-
-                $property->propertyImages()->create(['image_path' => $imageUrl]);
-            }
-        }
-
-        foreach ($request->property_amenities as $amenity_id) {
-            $property->propertyAmenities()->create(['amenity_id' => $amenity_id]);
-        }
-
-        return response()->json(
-            [
-                'message' => 'Property added successfully',
-                "data" => [
-                    new PropertyResource($property->load(['propertyImages', 'propertyAmenities'])),
-                ]
-            ],
-            200
-        );
+        return ApiResponse::sendResponse(200, 'Property added successfully', $property);
     }
+    public function storeAmenities(Request $request, $propertyId)
+    {
+        $validator = Validator::make($request->all(), [
+            'amenities' => 'required|array',
+            'amenities.*' => 'exists:amenities,id',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        $property = Property::findOrFail($propertyId);
+        $property->propertyAmenities()->attach($request->amenities);
+    
+        return response()->json(['message' => 'Amenities added successfully.'], 200);
+    }
+
+
+
+    public function storeImages(Request $request, $propertyId)
+    {
+        $validator = Validator::make($request->all(), [
+            'images' => 'required|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+    
+        $property = Property::findOrFail($propertyId);
+    
+        foreach ($request->file('images') as $image) {
+            $path = $image->store('property_images', 'public');
+    
+            PropertyImage::create([
+                'property_id' => $property->id,
+                'image_path' => $path,
+            ]);
+        }
+    
+        return response()->json(['message' => 'Images uploaded successfully.'], 201);
+    }
+   
     public function show($id)
     {
         $property = Property::with(['images', 'amenities'])->find($id);
@@ -274,3 +302,17 @@ class PropertyController extends Controller
         return propertyResource::collection($property);
     }
 }
+
+  // if ($request->hasFile('images')) {
+        //     foreach ($request->file('images') as $image) {
+        //         $imagePath = $image->store('images/properties', 'public');
+
+        //         $imageUrl = asset('storage/' . $imagePath);
+
+        //         $property->propertyImages()->create(['image_path' => $imageUrl]);
+        //     }
+        // }
+
+        // foreach ($request->property_amenities as $amenity_id) {
+        //     $property->propertyAmenities()->create(['amenity_id' => $amenity_id]);
+        // }
