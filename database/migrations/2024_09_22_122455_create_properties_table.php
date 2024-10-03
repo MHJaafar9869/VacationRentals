@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->longText('description');
             $table->integer('bedrooms')->default(0);
             $table->integer('bathrooms')->default(0);
+            $table->integer('sleeps')->default(0);
             $table->string('city');
             $table->string('country');
             $table->string('address');
