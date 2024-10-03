@@ -11,7 +11,6 @@ use App\Http\Controllers\GmailController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
-use App\Http\Controllers\LocationController;
 use App\Http\Controllers\StripePaymentController;
 use Illuminate\Support\Facades\Route;
 
@@ -61,12 +60,11 @@ Route::post('owners/password/reset', [PasswordResetController::class, 'reset']);
 // ===================Edit profile Routes====================
 Route::put('/users/{id}', [UserController::class, 'updateprofile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
-// ===================location Routes====================
-Route::post('/search-location', [LocationController::class, 'searchLocation']);
+
 
 // ===================Admin Routes====================
 Route::controller(AdminController::class)->prefix('admin')->group(function(){
-   Route::get('/users', 'users'); 
+   Route::get('/users', 'users');
    Route::get('/owners', 'owners');
    Route::get('/properties', 'properties');
 });
