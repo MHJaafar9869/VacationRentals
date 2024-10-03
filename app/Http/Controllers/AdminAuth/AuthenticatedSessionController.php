@@ -14,31 +14,47 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
+   
+    
     public function store(LoginRequest $request)
     {
-        $validator = Validator::make($request->all(),([
+        $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255',
             'password' => 'required|string|min:6',
-               
-           ]), [
-               'email.required' => 'Email is required',
-               'password.required' => 'Password is required',
-           ]);
-           if($validator->fails()){
-               return ApiResponse::sendResponse(200, 'Success', $validator->messages()->all());
-           }
-   
-           if(Auth::guard('owner')->attempt(['email' => $request->email, 'password' => $request->password])){
-               $user = Auth::guard('owner')->user();
-               $data['token'] = $user->createToken('auth_token')->plainTextToken;
-               $data['name'] = $user->name;
-               $data['email'] = $user->email;
-               return ApiResponse::sendResponse(200, 'Success Login', $data);
-           }else{
-               return ApiResponse::sendResponse(401, 'user cradentials not match', null);
-           }
+        ], [
+            'email.required' => 'Email is required',
+            'password.required' => 'Password is required',
+        ]);
+    
+        if ($validator->fails()) {
+            return ApiResponse::sendResponse(400, 'Validation failed', $validator->messages()->all());
+        }
+    
+        // Attempt to authenticate the owner
+        if (Auth::guard('owner')->attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = Auth::guard('owner')->user();
+    
+            // Check the user's role
+            if ($user->role === 'admin') {
+                // Admin-specific response or redirect
+                $data['token'] = $user->createToken('auth_token')->plainTextToken;
+                $data['role'] = $user->role;
+                $data['name'] = $user->name;
+                $data['email'] = $user->email;
+                return ApiResponse::sendResponse(200, 'Admin Login Success', $data); // You can modify to redirect to admin page
+            } elseif ($user->role === 'owner') {
+                // Owner-specific response or redirect
+                $data['token'] = $user->createToken('auth_token')->plainTextToken;
+                $data['role'] = $user->role;
+                $data['name'] = $user->name;
+                $data['email'] = $user->email;
+                return ApiResponse::sendResponse(200, 'Owner Login Success', $data); // Modify to redirect to owner page
+            }
+        } else {
+            return ApiResponse::sendResponse(401, 'User credentials do not match', null);
+        }
     }
-
+    
     /**
      * Destroy an authenticated session.
      */

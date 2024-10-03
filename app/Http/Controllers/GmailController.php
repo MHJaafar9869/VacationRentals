@@ -10,11 +10,13 @@ use Laravel\Socialite\Facades\Socialite;
 class GmailController extends Controller
 {
     // Google login for users
-    public function login(){
+    public function login()
+    {
         return Socialite::driver('google')->stateless()->redirect();
     }
 
-    public function loginOwner() {
+    public function loginOwner()
+    {
         $state = ['role' => 'owner'];
 
         return Socialite::driver('google')
@@ -23,7 +25,8 @@ class GmailController extends Controller
             ->redirect();
     }
 
-    public function redirect(Request $request) {
+    public function redirect(Request $request)
+    {
         $googleUser = Socialite::driver('google')->stateless()->user();
 
         $state = json_decode($request->input('state'), true);

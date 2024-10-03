@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\Admin;
+use App\Http\Middleware\Owner;
+use App\Http\Middleware\Travller;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,9 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'travller' => Travller::class,
+            'owner' => Owner::class,
         ]);
 
-        //
+       
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class Owner extends Authenticatable
+class Owner extends Authenticatable implements MustVerifyEmail
 
 {
     
@@ -30,4 +32,6 @@ class Owner extends Authenticatable
     {
         return $this->hasMany(Property::class);
     }
+
+  
 }
