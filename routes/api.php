@@ -97,3 +97,8 @@ Route::post('/email/verification-notification', [EmailVerificationNotificationCo
 
 Route::post('/properties/{id}/accept', [AdminController::class, 'acceptProperty']);
 Route::post('/properties/{id}/reject', [AdminController::class, 'rejectProperty']);
+Route::controller(StripePaymentController::class)->group(function(){
+    Route::post('stripe' , 'stripe')->name('stripe');
+    Route::get('success' , 'success')->name('success');
+    Route::get('cancel' , 'cancel')->name('cancel');
+});
