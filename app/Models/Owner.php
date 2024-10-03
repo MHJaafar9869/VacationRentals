@@ -12,7 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 class Owner extends Authenticatable implements MustVerifyEmail
 
 {
-    
+
     use HasFactory , HasApiTokens , Notifiable;
     protected $fillable = [
         'name',
@@ -33,5 +33,5 @@ class Owner extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Property::class);
     }
 
-  
+
 }

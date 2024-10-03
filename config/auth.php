@@ -45,7 +45,7 @@ return [
             'provider' => 'owners',
         ],
 
-      
+
     ],
 
     /*
@@ -107,7 +107,7 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
-       'owners' => [
+    'owners' => [
         'provider' => 'owners',
         'table' => 'password_reset_tokens', // Use the same table
         'expire' => 60,
