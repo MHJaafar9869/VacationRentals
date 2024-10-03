@@ -5,7 +5,9 @@ use App\Http\Controllers\AdminAuth\PasswordResetController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GmailController;
 use App\Http\Controllers\OwnerController;
@@ -88,6 +90,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
 });
 
+
+Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)->name('verification.verify')->middleware('auth:sanctum');
+Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])->middleware('auth:sanctum')->name('verification.send');
+
+
+Route::post('/properties/{id}/accept', [AdminController::class, 'acceptProperty']);
+Route::post('/properties/{id}/reject', [AdminController::class, 'rejectProperty']);
 Route::controller(StripePaymentController::class)->group(function(){
     Route::post('stripe' , 'stripe')->name('stripe');
     Route::get('success' , 'success')->name('success');

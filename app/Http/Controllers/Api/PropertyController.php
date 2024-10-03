@@ -12,7 +12,9 @@ use App\Models\Property;
 use App\Models\PropertyAmenity;
 use App\Models\PropertyImage;
 use Carbon\Carbon;
+// use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -29,6 +31,7 @@ class PropertyController extends Controller
     }
     public function store(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
             'name' => 'required | min:5 | max:255',
             'headline' => 'required | min:5 | max:255',
@@ -42,15 +45,16 @@ class PropertyController extends Controller
             'category_id' => 'required',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'owner_id' => 'required',
         ]);
 
-        if ($validator->fails()) {
+        if ($validator->fails()) {     
+
             return response()->json([
                 'message' => "All fields are mandatory",
                 'error' => $validator->messages()
             ], 422);
         }
-
         $property = Property::create([
             'name' => $request->name,
             'headline' => $request->headline,
@@ -64,6 +68,7 @@ class PropertyController extends Controller
             'category_id' => $request->category_id,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
+            'owner_id' => 1,
         ]);
 
 

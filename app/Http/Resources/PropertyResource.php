@@ -30,6 +30,7 @@ class PropertyResource extends JsonResource
             "modifiedAt" => $this->updated_at,
             "category_id" => $this->category->id,
             "property_type" => $this->category->name,
+            "owner_id" => $this->owner->id,
         ];
     }
 }

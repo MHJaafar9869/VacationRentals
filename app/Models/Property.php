@@ -23,6 +23,7 @@ class Property extends Model
         "category_id",
         'latitude',
         'longitude',
+        'owner_id'
     ];
 
     public function category()
@@ -32,7 +33,7 @@ class Property extends Model
 
     public function owner()
     {
-        return $this->belongsTo(User::class, "owner_id", "id");
+        return $this->belongsTo(Owner::class, "owner_id", "id");
     }
 
     public function booking()
