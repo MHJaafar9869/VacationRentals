@@ -13,7 +13,6 @@ use App\Http\Controllers\GmailController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
-use App\Http\Controllers\LocationController;
 use App\Http\Controllers\StripePaymentController;
 use Illuminate\Support\Facades\Route;
 
@@ -68,6 +67,17 @@ Route::post('owners/password/reset', [PasswordResetController::class, 'reset']);
 // ===================End Owner Routes====================
 
 // ===================Edit profile Routes====================
+Route::put('/users/{id}', [UserController::class, 'updateprofile']);
+Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
+
+
+// ===================Admin Routes====================
+Route::controller(AdminController::class)->prefix('admin')->group(function(){
+   Route::get('/users', 'users');
+   Route::get('/owners', 'owners');
+   Route::get('/properties', 'properties');
+});
+=======
 Route::put('/users/{id}', [UserController::class, 'updateProfile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 // ===================location Routes====================
@@ -82,14 +92,12 @@ Route::controller(AdminController::class)
         Route::get('/owners', 'owners');
         Route::get('/properties', 'properties');
     });
-
 // ===================End Admin Routes====================
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites', [FavoriteController::class, 'addToFavorites']);
     Route::delete('/favorites', [FavoriteController::class, 'removeFromFavorites']);
     Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
 });
-
 
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)->name('verification.verify')->middleware('auth:sanctum');
 Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])->middleware('auth:sanctum')->name('verification.send');
@@ -102,3 +110,4 @@ Route::controller(StripePaymentController::class)->group(function(){
     Route::get('success' , 'success')->name('success');
     Route::get('cancel' , 'cancel')->name('cancel');
 });
+

@@ -125,7 +125,7 @@ return [
     | confirmation screen. By default, the timeout lasts for three hours.
     |
     */
-
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:4200'),
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
 ];
