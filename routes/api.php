@@ -87,3 +87,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/favorites', [FavoriteController::class, 'removeFromFavorites']);
     Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
 });
+
+Route::controller(StripePaymentController::class)->group(function(){
+    Route::post('stripe' , 'stripe')->name('stripe');
+    Route::get('success' , 'success')->name('success');
+    Route::get('cancel' , 'cancel')->name('cancel');
+});
