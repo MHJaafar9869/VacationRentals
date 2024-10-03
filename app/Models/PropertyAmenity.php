@@ -18,4 +18,14 @@ class PropertyAmenity extends Model
     // {
     //     return $this->belongsToMany(Amenity::class, 'amenities', '', '');
     // }
+    public function property()
+    {
+        return $this->belongsTo(Property::class);
+    }
+
+    // A property amenity belongs to an amenity
+    public function amenity()
+    {
+        return $this->belongsTo(Amenity::class);
+    }
 }
