@@ -56,8 +56,8 @@ Route::controller(GmailController::class)->group(function () {
 });
 
 // ===================End Auth Routes====================
-// ===================Owner Routes====================
 
+// ===================Owner Routes====================
 Route::post('/register/owner', [App\Http\Controllers\AdminAuth\RegisteredUserController::class, 'store']);
 Route::post('/login/owner', [App\Http\Controllers\AdminAuth\AuthenticatedSessionController::class, 'store']);
 Route::post('/logout/owner', [App\Http\Controllers\AdminAuth\AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
@@ -72,16 +72,15 @@ Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
 
 
 // ===================Admin Routes====================
-Route::controller(AdminController::class)->prefix('admin')->group(function(){
-   Route::get('/users', 'users');
-   Route::get('/owners', 'owners');
-   Route::get('/properties', 'properties');
+Route::controller(AdminController::class)->prefix('admin')->group(function () {
+    Route::get('/users', 'users');
+    Route::get('/owners', 'owners');
+    Route::get('/properties', 'properties');
 });
-=======
+
 Route::put('/users/{id}', [UserController::class, 'updateProfile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
-// ===================location Routes====================
-// Route::post('/search-location', [LocationController::class, 'searchLocation']);
+
 
 // ===================Admin Routes====================
 Route::controller(AdminController::class)
@@ -105,9 +104,8 @@ Route::post('/email/verification-notification', [EmailVerificationNotificationCo
 
 Route::post('/properties/{id}/accept', [AdminController::class, 'acceptProperty']);
 Route::post('/properties/{id}/reject', [AdminController::class, 'rejectProperty']);
-Route::controller(StripePaymentController::class)->group(function(){
-    Route::post('stripe' , 'stripe')->name('stripe');
-    Route::get('success' , 'success')->name('success');
-    Route::get('cancel' , 'cancel')->name('cancel');
+Route::controller(StripePaymentController::class)->group(function () {
+    Route::post('stripe', 'stripe')->name('stripe');
+    Route::get('success', 'success')->name('success');
+    Route::get('cancel', 'cancel')->name('cancel');
 });
-
