@@ -20,7 +20,7 @@ class PropertyController extends Controller
 {
     public function index()
     {
-        $property = Property::all();
+        $property = Property::all()->where('status', '==', 'accepted');
         if (count($property) > 0) {
             return PropertyResource::collection($property);
         } else {
@@ -42,7 +42,7 @@ class PropertyController extends Controller
             'category_id' => 'required',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            ]);
+        ]);
 
         if ($validator->fails()) {
             return response()->json([
@@ -66,7 +66,7 @@ class PropertyController extends Controller
             'longitude' => $request->longitude,
         ]);
 
-      
+
 
         return ApiResponse::sendResponse(200, 'Property added successfully', $property);
     }
@@ -76,17 +76,17 @@ class PropertyController extends Controller
             'amenities' => 'required|array',
             'amenities.*' => 'exists:amenities,id',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed.',
                 'errors' => $validator->errors()
             ], 422);
         }
-        
+
         $property = Property::findOrFail($propertyId);
         $property->propertyAmenities()->attach($request->amenities);
-    
+
         return response()->json(['message' => 'Amenities added successfully.'], 200);
     }
 
@@ -98,28 +98,28 @@ class PropertyController extends Controller
             'images' => 'required|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed.',
                 'errors' => $validator->errors()
             ], 422);
         }
-    
+
         $property = Property::findOrFail($propertyId);
-    
+
         foreach ($request->file('images') as $image) {
             $path = $image->store('property_images', 'public');
-    
+
             PropertyImage::create([
                 'property_id' => $property->id,
                 'image_path' => $path,
             ]);
         }
-    
+
         return response()->json(['message' => 'Images uploaded successfully.'], 201);
     }
-   
+
     public function show($id)
     {
         $property = Property::with(['images', 'amenities'])->find($id);
@@ -210,20 +210,23 @@ class PropertyController extends Controller
     public function search(Request $request)
     {
         $query = DB::table('properties')
-            ->leftJoin('bookings', 'properties.id', '=', 'bookings.property_id') // Join the booking table
+            ->leftJoin('bookings', 'properties.id', '=', 'bookings.property_id')
             ->select('properties.*')
             ->where(function ($query) use ($request) {
                 if ($request->has('name')) {
                     $query->where('properties.name', 'like', '%' . $request->input('name') . '%');
                 }
                 if ($request->has('city')) {
-                    $query->where('properties.city', $request->input('city'));
+                    $query->where('properties.city', $request->input('city'))->where('properties.status', 'accepted');
+                }
+                if ($request->has('sleeps')) {
+                    $query->where('properties.sleeps', '>=', $request->input('sleeps'))->where('properties.status', 'accepted');
                 }
                 if ($request->has('bedrooms')) {
-                    $query->where('properties.bedrooms', '>=', $request->input('bedrooms'));
+                    $query->where('properties.bedrooms', '>=', $request->input('bedrooms'))->where('properties.status', 'accepted');
                 }
                 if ($request->has(key: 'bathrooms')) {
-                    $query->where('properties.bathrooms', '>=', $request->input('bathrooms'));
+                    $query->where('properties.bathrooms', '>=', $request->input('bathrooms'))->where('properties.status', 'accepted');
                 }
                 // if ($request->has('name')) {
                 //     $query->where('name', 'like', '%' . $request->input('name') . '%');
@@ -259,33 +262,39 @@ class PropertyController extends Controller
             $endDate = Carbon::parse($request->input('end_date'));
 
             if ($startDate->isPast() || $endDate->isPast()) {
-                return response()->json(['message' => 'The selected date range has passed. Please choose future dates.'], 400);
+                return response()->json([
+                    'message' => 'The selected date range has passed. Please choose future dates.',
+                    'data' => []
+                ], 200);
             }
             if ($startDate->gt($endDate)) {
-                return response()->json(['message' => 'The start date cannot be after the end date.'], 400);
+                return response()->json(['message' => 'The start date cannot be after the end date.'], 200);
             }
             if ($endDate->lt($startDate)) {
-                return response()->json(['message' => 'The end date cannot be before the start date.'], 400);
+                return response()->json(['message' => 'The end date cannot be before the start date.'], 200);
             }
 
             $query->where(function ($query) use ($startDate, $endDate) {
+                $query->where('properties.status', 'accepted');
+
                 $query->whereNull('bookings.id')
                     ->orWhere(function ($query) use ($startDate, $endDate) {
-                        $query->where('bookings.status', '!=', 'confirmed')
+                        $query->where('bookings.status', '!=', 'accepted')
                             ->orWhere(function ($query) use ($startDate, $endDate) {
                                 $query->where('bookings.end_date', '<', $startDate)
                                     ->orWhere('bookings.start_date', '>', $endDate);
                             });
                     });
             });
+
         } else {
-            return response()->json(['message' => 'Please provide both start and end dates.'], 400);
+            return response()->json(['message' => 'Please provide both start and end dates.'], 200);
         }
 
         $properties = $query->get();
 
         if ($properties->isEmpty()) {
-            return response()->json(['message' => 'No properties found'], 404);
+            return response()->json(['message' => 'No properties found'], 200);
         }
 
         return response()->json($properties);
@@ -301,18 +310,42 @@ class PropertyController extends Controller
         $property = $category->properties;
         return propertyResource::collection($property);
     }
+    // public function searchAvailableProperties(Request $request)
+    // {
+    //     $start_date = $request->start_date;
+    //     $end_date = $request->end_date;
+
+    //     $availableProperties = DB::table('properties AS p')
+    //         ->whereNotExists(function ($query) use ($start_date, $end_date) {
+    //             $query->select(DB::raw(1))
+    //                 ->from('booking AS b')
+    //                 ->whereColumn('b.property_id', 'p.id')
+    //                 ->where('b.status', 'confirmed')
+    //                 ->where(function ($query) use ($start_date, $end_date) {
+    //                     $query->whereBetween('b.start_date', [$start_date, $end_date])
+    //                         ->orWhereBetween('b.end_date', [$start_date, $end_date])
+    //                         ->orWhere(function ($query) use ($start_date, $end_date) {
+    //                             $query->where('b.start_date', '<=', $start_date)
+    //                                 ->where('b.end_date', '>=', $end_date);
+    //                         });
+    //                 });
+    //         })
+    //         ->get();
+
+    //     return response()->json($availableProperties);
+    // }
 }
 
-  // if ($request->hasFile('images')) {
-        //     foreach ($request->file('images') as $image) {
-        //         $imagePath = $image->store('images/properties', 'public');
+// if ($request->hasFile('images')) {
+//     foreach ($request->file('images') as $image) {
+//         $imagePath = $image->store('images/properties', 'public');
 
-        //         $imageUrl = asset('storage/' . $imagePath);
+//         $imageUrl = asset('storage/' . $imagePath);
 
-        //         $property->propertyImages()->create(['image_path' => $imageUrl]);
-        //     }
-        // }
+//         $property->propertyImages()->create(['image_path' => $imageUrl]);
+//     }
+// }
 
-        // foreach ($request->property_amenities as $amenity_id) {
-        //     $property->propertyAmenities()->create(['amenity_id' => $amenity_id]);
-        // }
+// foreach ($request->property_amenities as $amenity_id) {
+//     $property->propertyAmenities()->create(['amenity_id' => $amenity_id]);
+// }
