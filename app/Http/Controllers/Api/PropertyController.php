@@ -127,18 +127,22 @@ class PropertyController extends Controller
 
     public function show($id)
     {
-        $property = Property::with(['images', 'amenities'])->find($id);
-        return response()->json(
-            [
-                'message' => 'Property added successfully',
-                "data" => [
-                    new PropertyResource($property),
-                    // $property->propertyImages()->load(['images']),
-                    // $property->propertyAmenities()->load(['amenity'])
-                ]
-            ],
-            200
-        );
+
+        $property = Property::with(['propertyImages', 'propertyAmenities'])->findOrFail($id);
+        
+        return new PropertyResource($property);
+        // $property = Property::with(['images', 'amenities'])->find($id);
+        // return response()->json(
+        //     [
+        //         'message' => 'Property added successfully',
+        //         "data" => [
+        //             new PropertyResource($property),
+        //             // $property->propertyImages()->load(['images']),
+        //             // $property->propertyAmenities()->load(['amenity'])
+        //         ]
+        //     ],
+        //     200
+        // );
     }
 
     public function update(Request $request, Property $property)
