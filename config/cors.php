@@ -19,7 +19,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [env('FRONTEND_URL')],
+    'allowed_origins' => [env('FRONTEND_URL'),
+    'http://localhost:3000', // existing origin
+    'http://localhost:4200', // add this line for Angular
+],
 
     'allowed_origins_patterns' => [],
 

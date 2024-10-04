@@ -29,7 +29,7 @@ class FavoriteController extends Controller
 
     public function getUserFavorites()
     {
-        $favorites = Favorite::with('property')->where('user_id', Auth::id())->get();
+        $favorites = Favorite::with('properties')->where('user_id', Auth::id())->get();
 
         return response()->json($favorites);
     }

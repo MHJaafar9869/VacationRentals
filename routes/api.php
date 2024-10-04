@@ -94,7 +94,7 @@ Route::controller(AdminController::class)
 // ===================End Admin Routes====================
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites', [FavoriteController::class, 'addToFavorites']);
-    Route::delete('/favorites', [FavoriteController::class, 'removeFromFavorites']);
+    Route::delete('/favorites/{property_id}', [FavoriteController::class, 'removeFromFavorites']);
     Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
 });
 
