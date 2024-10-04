@@ -17,6 +17,6 @@ class Favorite extends Model
 
     public function properties()
     {
-        return $this->hasMany(Property::class, "property_id", "id");
+        return $this->belongsTo(Property::class, "property_id", "id");
     }
 }
