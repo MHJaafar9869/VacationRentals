@@ -49,7 +49,7 @@ class PropertyController extends Controller
         ]);
 
         if ($validator->fails()) {     
-
+            
             return response()->json([
                 'message' => "All fields are mandatory",
                 'error' => $validator->messages()

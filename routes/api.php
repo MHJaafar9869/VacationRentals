@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GmailController;
 use App\Http\Controllers\OwnerController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\StripePaymentController;
@@ -78,10 +79,13 @@ Route::controller(AdminController::class)->prefix('admin')->group(function () {
     Route::get('/users', 'users');
     Route::get('/owners', 'owners');
     Route::get('/properties', 'properties');
+
 });
+
 
 Route::put('/users/{id}', [UserController::class, 'updateProfile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
+
 
 
 // ===================Admin Routes====================
@@ -92,11 +96,13 @@ Route::controller(AdminController::class)
         Route::get('/users', 'users');
         Route::get('/owners', 'owners');
         Route::get('/properties', 'properties');
+        Route::delete('/deleteuser/{id}', 'deleteuser');
+        Route::delete('/deleteowner/{id}', 'deleteowner');
     });
 // ===================End Admin Routes====================
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites', [FavoriteController::class, 'addToFavorites']);
-    Route::delete('/favorites', [FavoriteController::class, 'removeFromFavorites']);
+    Route::delete('/favorites/{property_id}', [FavoriteController::class, 'removeFromFavorites']);
     Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
 });
 
@@ -111,3 +117,12 @@ Route::controller(StripePaymentController::class)->group(function () {
     Route::get('success', 'success')->name('success');
     Route::get('cancel', 'cancel')->name('cancel');
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/reviews', [ReviewController::class, 'addReview']); // Add review
+
+
+});
+
+Route::get('/properties/{id}/reviews', [ReviewController::class, 'getPropertyReviews']); // Get reviews for property
+Route::delete('/reviews/{id}', [ReviewController::class, 'deleteReview']);
