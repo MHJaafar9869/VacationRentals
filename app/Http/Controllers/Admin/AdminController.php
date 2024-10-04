@@ -63,6 +63,16 @@ class AdminController extends Controller
         // Send email using Laravel's Mail facade
         Mail::to($owner->email)->send(new PropertyAccepted($owner));
     }
+    public function deleteuser($id){
+        $user = User::find($id);
+        $user->delete();
+        return response()->json(['message' => 'User deleted successfully']);
+    }
 
+    public function deleteowner($id){
+        $owner = Owner::find($id);
+        $owner->delete();
+        return response()->json(['message' => 'Owner deleted successfully']);
+    }
 
 }
