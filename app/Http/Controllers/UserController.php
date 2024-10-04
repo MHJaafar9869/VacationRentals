@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+
+    public function getUserProfile($id)
+    {
+        $user = User::findOrFail($id);
+        return response()->json($user, 200);
+    }
+
     public function updateProfile(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [

@@ -14,14 +14,14 @@ class PasswordResetController extends Controller
     public function sendResetLinkEmail(Request $request)
     {
         $request->validate(['email' => 'required|email']);
-    
+
         $status = Password::broker('owners')->sendResetLink($request->only('email'));
-    
+
         return $status === Password::RESET_LINK_SENT
                     ? response()->json(['message' => __($status)], 200)
                     : response()->json(['message' => __($status)], 400);
     }
-    
+
     public function reset(Request $request)
     {
         $request->validate([
@@ -29,7 +29,7 @@ class PasswordResetController extends Controller
             'password' => 'required|string|confirmed|min:8',
             'token' => 'required',
         ]);
-    
+
         $status = Password::broker('owners')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($owner, $password) {
@@ -37,7 +37,7 @@ class PasswordResetController extends Controller
                 $owner->save();
             }
         );
-    
+
         return $status === Password::PASSWORD_RESET
                     ? response()->json(['message' => __($status)], 200)
                     : response()->json(['message' => __($status)], 400);
@@ -45,14 +45,14 @@ class PasswordResetController extends Controller
     public function sendResetLinkEmailUser(Request $request)
     {
         $request->validate(['email' => 'required|email']);
-    
+
         $status = Password::broker('users')->sendResetLink($request->only('email'));
-    
+
         return $status === Password::RESET_LINK_SENT
                     ? response()->json(['message' => __($status)], 200)
                     : response()->json(['message' => __($status)], 400);
     }
-    
+
     public function resetUser(Request $request)
     {
         $request->validate([
@@ -60,15 +60,15 @@ class PasswordResetController extends Controller
             'password' => 'required|string|confirmed|min:8',
             'token' => 'required',
         ]);
-    
+
         $status = Password::broker('users')->reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            $request->only('email', 'password', 'password_mation', 'token'),
             function ($user, $password) {
                 $user->password = bcrypt($password);
                 $user->save();
             }
         );
-    
+
         return $status === Password::PASSWORD_RESET
                     ? response()->json(['message' => __($status)], 200)
                     : response()->json(['message' => __($status)], 400);
