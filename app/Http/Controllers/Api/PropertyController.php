@@ -48,6 +48,8 @@ class PropertyController extends Controller
             'owner_id' => 'required',
         ]);
 
+        if ($validator->fails()) {
+
         if ($validator->fails()) {     
             
             return response()->json([
@@ -86,7 +88,7 @@ class PropertyController extends Controller
             return response()->json([
                 'message' => 'Validation failed.',
                 'errors' => $validator->errors()
-            ], 422);
+            ], 200);
         }
 
         $property = Property::findOrFail($propertyId);
@@ -108,7 +110,7 @@ class PropertyController extends Controller
             return response()->json([
                 'message' => 'Validation failed.',
                 'errors' => $validator->errors()
-            ], 422);
+            ], 200);
         }
 
         $property = Property::findOrFail($propertyId);
@@ -168,7 +170,7 @@ class PropertyController extends Controller
             return response()->json([
                 'message' => "All fields are mandatory",
                 'error' => $validator->messages()
-            ], 422);
+            ], 200);
         }
 
         $property->update([
@@ -203,6 +205,7 @@ class PropertyController extends Controller
 
         return response()->json(
             [
+                'status' => 200,
                 'message' => 'Property updated successfully',
                 'data' => new PropertyResource($property->load(['images', 'amenities']))
             ],
@@ -306,7 +309,12 @@ class PropertyController extends Controller
             return response()->json(['message' => 'No properties found'], 200);
         }
 
-        return response()->json($properties);
+        return response()->json([
+            'status' => 200,
+            'message' => 'Data returned successfully',
+            'data' => $properties
+        ]);
+        // return PropertyResource::collection($properties);
     }
     public function getpropertycategory($id)
     {
