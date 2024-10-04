@@ -10,8 +10,8 @@ class Amenity extends Model
     use HasFactory;
     protected $fillable = ['name'];
 
-    public function propertyAmenity()
+    public function properties()
     {
-        return $this->belongsToMany(PropertyAmenity::class , 'property_amenities', 'amenity_id', 'property_id');
+        return $this->belongsToMany(Property::class, 'property_amenities', 'amenity_id', 'property_id');
     }
 }

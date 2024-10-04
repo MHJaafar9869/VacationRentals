@@ -11,9 +11,9 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GmailController;
 use App\Http\Controllers\OwnerController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
-use App\Http\Controllers\LocationController;
 use App\Http\Controllers\StripePaymentController;
 use Illuminate\Support\Facades\Route;
 
@@ -57,8 +57,8 @@ Route::controller(GmailController::class)->group(function () {
 });
 
 // ===================End Auth Routes====================
-// ===================Owner Routes====================
 
+// ===================Owner Routes====================
 Route::post('/register/owner', [App\Http\Controllers\AdminAuth\RegisteredUserController::class, 'store']);
 Route::post('/login/owner', [App\Http\Controllers\AdminAuth\AuthenticatedSessionController::class, 'store']);
 Route::post('/logout/owner', [App\Http\Controllers\AdminAuth\AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
@@ -68,10 +68,25 @@ Route::post('owners/password/reset', [PasswordResetController::class, 'reset']);
 // ===================End Owner Routes====================
 
 // ===================Edit profile Routes====================
+Route::get('/users/{id}', [UserController::class, 'getUserProfile']);
+Route::put('/users/{id}', [UserController::class, 'updateProfile']);
+
+Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
+
+
+// ===================Admin Routes====================
+Route::controller(AdminController::class)->prefix('admin')->group(function () {
+    Route::get('/users', 'users');
+    Route::get('/owners', 'owners');
+    Route::get('/properties', 'properties');
+
+});
+
+
 Route::put('/users/{id}', [UserController::class, 'updateProfile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
-// ===================location Routes====================
-// Route::post('/search-location', [LocationController::class, 'searchLocation']);
+
+
 
 // ===================Admin Routes====================
 Route::controller(AdminController::class)
@@ -81,15 +96,15 @@ Route::controller(AdminController::class)
         Route::get('/users', 'users');
         Route::get('/owners', 'owners');
         Route::get('/properties', 'properties');
+        Route::delete('/deleteuser/{id}', 'deleteuser');
+        Route::delete('/deleteowner/{id}', 'deleteowner');
     });
-
 // ===================End Admin Routes====================
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites', [FavoriteController::class, 'addToFavorites']);
-    Route::delete('/favorites', [FavoriteController::class, 'removeFromFavorites']);
+    Route::delete('/favorites/{property_id}', [FavoriteController::class, 'removeFromFavorites']);
     Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
 });
-
 
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)->name('verification.verify')->middleware('auth:sanctum');
 Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])->middleware('auth:sanctum')->name('verification.send');
@@ -97,8 +112,17 @@ Route::post('/email/verification-notification', [EmailVerificationNotificationCo
 
 Route::post('/properties/{id}/accept', [AdminController::class, 'acceptProperty']);
 Route::post('/properties/{id}/reject', [AdminController::class, 'rejectProperty']);
-Route::controller(StripePaymentController::class)->group(function(){
-    Route::post('stripe' , 'stripe')->name('stripe');
-    Route::get('success' , 'success')->name('success');
-    Route::get('cancel' , 'cancel')->name('cancel');
+Route::controller(StripePaymentController::class)->group(function () {
+    Route::post('stripe', 'stripe')->name('stripe');
+    Route::get('success', 'success')->name('success');
+    Route::get('cancel', 'cancel')->name('cancel');
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/reviews', [ReviewController::class, 'addReview']); // Add review
+
+
+});
+
+Route::get('/properties/{id}/reviews', [ReviewController::class, 'getPropertyReviews']); // Get reviews for property
+Route::delete('/reviews/{id}', [ReviewController::class, 'deleteReview']);

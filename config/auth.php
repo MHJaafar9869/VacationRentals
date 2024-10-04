@@ -45,7 +45,7 @@ return [
             'provider' => 'owners',
         ],
 
-      
+
     ],
 
     /*
@@ -107,7 +107,7 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
-       'owners' => [
+    'owners' => [
         'provider' => 'owners',
         'table' => 'password_reset_tokens', // Use the same table
         'expire' => 60,
@@ -125,7 +125,7 @@ return [
     | confirmation screen. By default, the timeout lasts for three hours.
     |
     */
-
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:4200'),
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
 ];

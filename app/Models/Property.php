@@ -47,11 +47,20 @@ class Property extends Model
 
     public function propertyAmenities()
     {
-        return $this->belongsToMany(PropertyAmenity::class, "property_amenities", 'property_id', 'amenity_id');
+        return $this->belongsToMany(Amenity::class, 'property_amenities', 'property_id', 'amenity_id');
     }
-    public function favorites()
+   
+    // public function favorites()
+    // {
+    //     return $this->belongsToMany(Favorite::class);
+    // }
+    public function favoritedByUsers()
     {
-        return $this->hasMany(Favorite::class);
+        return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

@@ -3,15 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 // use Illuminate\Contracts\Auth\fMustVerifyEmail;
-
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Auth\Notifications\VerifyEmail;
+
+
+
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -32,7 +33,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'image',
         'provider_id',
         'email_verified_at',
-        
+
     ];
 
     /**
@@ -68,5 +69,13 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Booking::class);
     }
 
-   
+    public function favoriteProperties()
+    {
+        return $this->belongsToMany(Property::class, 'favorites')->withTimestamps();
+    }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }
+
