@@ -32,6 +32,7 @@ Route::post('property/{id}/images', [PropertyController::class, 'storeImages']);
 Route::post('/payment', [StripePaymentController::class, 'createPaymentIntent']);
 Route::post('/owner/{id}/register/stripe-account', [StripePaymentController::class, 'ownerCreateAccount']);
 Route::post('/create-checkout-session', [StripePaymentController::class, 'createCheckoutSession']);
+Route::get('/amenities', [PropertyController::class, 'getAmenities']);
 // ================== //
 // >Booking related< //
 Route::get('/properties/search', [PropertyController::class, 'search']);

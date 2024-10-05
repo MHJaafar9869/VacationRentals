@@ -25,6 +25,7 @@ class PropertyResource extends JsonResource
             "country" => $this->country,
             "address" => $this->address,
             "nightRate" => $this->night_rate,
+            "sleeps" => $this->sleeps,
             "status" => $this->status,
             "createdAt" => $this->created_at,
             "modifiedAt" => $this->updated_at,

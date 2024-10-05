@@ -46,6 +46,7 @@ class PropertyController extends Controller
         ]);
 
         if ($validator->fails()) {
+
             return response()->json([
                 'message' => "All fields are mandatory",
                 'error' => $validator->messages()
@@ -106,9 +107,6 @@ class PropertyController extends Controller
 
         return null;
     }
-
-}
-
     public function storeAmenities(Request $request, $propertyId)
     {
         $validator = Validator::make($request->all(), [
@@ -129,20 +127,28 @@ class PropertyController extends Controller
         return response()->json(['message' => 'Amenities added successfully.'], 200);
     }
 
-
+    public function getAmenities()
+    {
+        $amenities = Amenity::get();
+        return response()->json([
+            'status' => 200,
+            'message' => 'data returned successfully',
+            'data' => $amenities
+        ]);
+    }
 
     public function storeImages(Request $request, $propertyId)
     {
         $validator = Validator::make($request->all(), [
             'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:4189',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed.',
                 'errors' => $validator->errors()
-            ], 200);
+            ], 400);
         }
 
         $property = Property::findOrFail($propertyId);
@@ -163,6 +169,7 @@ class PropertyController extends Controller
     {
 
         $property = Property::with(['propertyImages', 'propertyAmenities'])->findOrFail($id);
+
 
         return new PropertyResource($property);
         // $property = Property::with(['images', 'amenities'])->find($id);
@@ -258,7 +265,7 @@ class PropertyController extends Controller
             ->select('properties.*')
             ->where(function ($query) use ($request) {
                 if ($request->has('name')) {
-                    $query->where('properties.name', 'like', '%' . $request->input('name') . '%');
+                    $query->where('properties.name', 'like', `%{$request->input('name')}%`);
                 }
                 if ($request->has('city')) {
                     $query->where('properties.city', $request->input('city'))->where('properties.status', 'accepted');
