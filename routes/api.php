@@ -70,8 +70,9 @@ Route::post('owners/password/reset', [PasswordResetController::class, 'reset']);
 // ===================Edit profile Routes====================
 Route::get('/users/{id}', [UserController::class, 'getUserProfile']);
 Route::put('/users/{id}', [UserController::class, 'updateProfile']);
+Route::get('/owners/{id}', [OwnerController::class, 'show']);
+Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
-Route::put('/owners/{id}', [OwnerController::class, 'updateprofile']);
 
 
 // ===================Admin Routes====================
