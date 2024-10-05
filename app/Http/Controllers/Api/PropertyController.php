@@ -107,6 +107,8 @@ class PropertyController extends Controller
         return null;
     }
 
+}
+
     public function storeAmenities(Request $request, $propertyId)
     {
         $validator = Validator::make($request->all(), [

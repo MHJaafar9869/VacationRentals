@@ -78,10 +78,13 @@ class StripePaymentController extends Controller
                 $payment->payment_status = $response->payment_status;
                 $payment->payment_method = 'Stripe';
                 $payment->save();
-    
-                // Return a success response with payment details
-                // return response()->json(['status' => 'success', 'payment' => $payment]);
-                return redirect('http://localhost:4200/success');  // Change to your Angular app URL
+                
+                $property = Property::where('name', $response->metadata->product_name)->first();
+                $owner = Owner::where('id', $property->owner_id)->first();
+                $owner->wallet += $response->amount_total / 100; // to insert in in $
+                $owner->save();
+                // dd($owner->wallet);
+                return redirect('http://localhost:4200/success');  
             } else {
                 return response()->json(['status' => 'error', 'message' => 'No session ID provided'], 400);
             }
