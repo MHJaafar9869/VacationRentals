@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Owner;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -39,6 +40,10 @@ class GmailController extends Controller
                 'name' => $googleUser->getName(),
                 'email' => $googleUser->getEmail(),
                 'email_verified_at' => now(),
+                'image' => $googleUser->getAvatar(),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+                'role' => 'owner',
             ]);
 
             $token = $owner->createToken('YourAppName')->plainTextToken;
@@ -50,7 +55,11 @@ class GmailController extends Controller
             ], [
                 'name' => $googleUser->getName(),
                 'email' => $googleUser->getEmail(),
+                'image' => $googleUser->getAvatar(),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
                 'email_verified_at' => now(),
+                
             ]);
 
             $token = $user->createToken('YourAppName')->plainTextToken;

@@ -2,63 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Owner;
 use Illuminate\Http\Request;
+use App\Models\Owner;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Hash;
 
 class OwnerController extends Controller
 {
+    public function show($id)
+    {
+        $owner = Owner::find($id);
+
+        if (!$owner) {
+            return response()->json(['message' => 'Owner not found'], 404);
+        }
+
+        return response()->json($owner);
+    }
+
     public function updateProfile(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required'],
-            'email' => ['required', 'email'],
-            'password' => ['nullable', 'min:8'],
-            'phone' => ['required'],
-            'address' => ['required'],
-            'gender' => ['required'],
-            'image' => ['nullable', 'image'],
-            'company_name' => ['required'],
-            'description' => ['required'],
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:owners,email,' . $id,
+            'phone' => 'required|string|min:11|max:15',
+            'address' => 'required|string|max:255',
+            'company_name' => 'required|string|max:255',
+            'gender' => 'required|string',
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
 
         $owner = Owner::findOrFail($id);
 
-        if ($request->hasFile('image')) {
-            if ($owner->image) {
-                $oldImagePath = public_path('images/owner_images/' . $owner->image);
-                if (file_exists($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
-            }
+        $owner->name = $validatedData['name'];
+        $owner->email = $validatedData['email'];
+        $owner->phone = $validatedData['phone'];
+        $owner->address = $validatedData['address'];
+        $owner->company_name = $validatedData['company_name'];
+        $owner->gender = $validatedData['gender'];
+        $owner->description = $validatedData['description'];
 
-            $imageName = time() . '.' . $request->image->extension();
-            $request->image->move(public_path('images/user_images'), $imageName);
-            $owner->image = $imageName;
+        if (!empty($validatedData['password'])) {
+            $owner->password = bcrypt($validatedData['password']);
         }
 
-        $owner->name = $request->name;
-        $owner->email = $request->email;
-        $owner->phone = $request->phone;
-        $owner->gender = $request->gender;
-        $owner->address = $request->address;
-        $owner->company_name = $request->company_name;
-        $owner->description = $request->description;
-
-        if ($request->filled('password')) {
-            $owner->password = Hash::make($request->password);
+        if ($request->hasFile('image')) {
         }
 
         $owner->save();
 
-        return response()->json([
-            'message' => 'Profile updated successfully',
-            'owner' => $owner
-        ], 200);
-    }
+        return response()->json(['message' => 'Owner profile updated successfully.']);
+}
 }
