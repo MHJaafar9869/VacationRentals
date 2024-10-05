@@ -77,6 +77,7 @@ class PropertyController extends Controller
 
         return ApiResponse::sendResponse(200, 'Property added successfully', $property);
     }
+}
     public function storeAmenities(Request $request, $propertyId)
     {
         $validator = Validator::make($request->all(), [
