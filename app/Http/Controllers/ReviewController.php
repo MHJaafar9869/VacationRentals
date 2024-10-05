@@ -24,8 +24,10 @@ class ReviewController extends Controller
             'review' => $request->review,
             'rating' => $request->rating
         ]);
-
-        return response()->json(['message' => 'Review submitted for moderation!', 'review' => $review], 201);
+        $review->load('user');
+        return response()->json(['message' => 'Review submitted for moderation!', 'review' => $review,
+      'user' => $review->user->name,
+    ], 201);
     }
 
 
@@ -34,7 +36,7 @@ class ReviewController extends Controller
     // Get reviews for a property
     public function getPropertyReviews($propertyId)
     {
-        $reviews = Review::where('property_id', $propertyId)->get();
+        $reviews = Review::where('property_id', $propertyId)->with('user')->get();
 
         return response()->json($reviews);
     }
