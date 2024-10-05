@@ -19,6 +19,6 @@ class PropertyRejected extends Mailable
     public function build()
     {
         return $this->subject('Your Property Has Been Rejected')
-                    ->view('property_rejected',['owner' => $this->owner]); // Your email view for rejected
+            ->view('property_rejected', ['owner' => $this->owner]);
     }
 }
