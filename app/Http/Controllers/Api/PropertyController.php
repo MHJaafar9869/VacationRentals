@@ -31,7 +31,6 @@ class PropertyController extends Controller
     }
     public function store(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'name' => 'required | min:5 | max:255',
             'headline' => 'required | min:5 | max:255',
@@ -43,20 +42,25 @@ class PropertyController extends Controller
             'address' => 'required',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
             'owner_id' => 'required',
         ]);
 
         if ($validator->fails()) {
-
-        if ($validator->fails()) {     
-            
             return response()->json([
                 'message' => "All fields are mandatory",
                 'error' => $validator->messages()
             ], 422);
         }
+
+        $fullAddress = $request->address . ', ' . $request->city . ', ' . $request->country;
+        $coordinates = $this->getCoordinatesFromNominatim($fullAddress);
+
+        if (!$coordinates) {
+            return response()->json([
+                'message' => 'Unable to get coordinates for the provided address.',
+            ], 422);
+        }
+
         $property = Property::create([
             'name' => $request->name,
             'headline' => $request->headline,
@@ -68,15 +72,41 @@ class PropertyController extends Controller
             'address' => $request->address,
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'owner_id' => 1,
+            'latitude' => $coordinates['latitude'],
+            'longitude' => $coordinates['longitude'],
+            'owner_id' => $request->owner_id,
         ]);
-
-
 
         return ApiResponse::sendResponse(200, 'Property added successfully', $property);
     }
+    private function getCoordinatesFromNominatim($fullAddress)
+    {
+        $url = "https://nominatim.openstreetmap.org/search?q=" . urlencode($fullAddress) . "&format=json&limit=1";
+
+        $options = [
+            "http" => [
+                "header" => "User-Agent: MyAppName/1.0 (email@example.com)"
+            ]
+        ];
+
+        $context = stream_context_create($options);
+
+        $response = file_get_contents($url, false, $context);
+
+        if ($response !== false) {
+            $json = json_decode($response, true);
+
+            if (!empty($json) && isset($json[0])) {
+                return [
+                    'latitude' => $json[0]['lat'],
+                    'longitude' => $json[0]['lon']
+                ];
+            }
+        }
+
+        return null;
+    }
+
     public function storeAmenities(Request $request, $propertyId)
     {
         $validator = Validator::make($request->all(), [
@@ -131,7 +161,7 @@ class PropertyController extends Controller
     {
 
         $property = Property::with(['propertyImages', 'propertyAmenities'])->findOrFail($id);
-        
+
         return new PropertyResource($property);
         // $property = Property::with(['images', 'amenities'])->find($id);
         // return response()->json(
@@ -298,7 +328,6 @@ class PropertyController extends Controller
                             });
                     });
             });
-
         } else {
             return response()->json(['message' => 'Please provide both start and end dates.'], 200);
         }
