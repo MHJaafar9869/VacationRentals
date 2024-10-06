@@ -18,10 +18,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class PropertyController extends Controller 
+class PropertyController extends Controller
 {
 
-   
+
     public function index()
     {
         $property = Property::all()->where('status', '==', 'accepted');
@@ -76,7 +76,7 @@ class PropertyController extends Controller
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
             'latitude' => $coordinates['latitude'],
-            'longitude' => $coordinates['longitude'],            
+            'longitude' => $coordinates['longitude'],
             'owner_id' => Auth::guard('sanctum')->user()->id,
         ]);
 
@@ -262,52 +262,23 @@ class PropertyController extends Controller
     }
     public function search(Request $request)
     {
-        $query = DB::table('properties')
-            ->leftJoin('bookings', 'properties.id', '=', 'bookings.property_id')
-            ->select('properties.*')
+        $query = Property::with(['category', 'owner', 'booking'])
             ->where(function ($query) use ($request) {
                 if ($request->has('name')) {
-                    $query->where('properties.name', 'like', `%{$request->input('name')}%`);
+                    $query->where('name', 'like', '%' . $request->input('name') . '%');
                 }
                 if ($request->has('city')) {
-                    $query->where('properties.city', $request->input('city'))->where('properties.status', 'accepted');
+                    $query->where('city', $request->input('city'))->where('status', 'accepted');
                 }
                 if ($request->has('sleeps')) {
-                    $query->where('properties.sleeps', '>=', $request->input('sleeps'))->where('properties.status', 'accepted');
+                    $query->where('sleeps', '>=', $request->input('sleeps'))->where('status', 'accepted');
                 }
                 if ($request->has('bedrooms')) {
-                    $query->where('properties.bedrooms', '>=', $request->input('bedrooms'))->where('properties.status', 'accepted');
+                    $query->where('bedrooms', '>=', $request->input('bedrooms'))->where('status', 'accepted');
                 }
-                if ($request->has(key: 'bathrooms')) {
-                    $query->where('properties.bathrooms', '>=', $request->input('bathrooms'))->where('properties.status', 'accepted');
+                if ($request->has('bathrooms')) {
+                    $query->where('bathrooms', '>=', $request->input('bathrooms'))->where('status', 'accepted');
                 }
-                // if ($request->has('name')) {
-                //     $query->where('name', 'like', '%' . $request->input('name') . '%');
-                // }
-                // if ($request->has('headline')) {
-                //     $query->where('headline', 'LIKE', '%' . $request->input('headline') . '%');
-                // }
-                // if ($request->has('city')) {
-                //     $query->where('city', $request->input('city'));
-                // }
-                // if ($request->has('country')) {
-                //     $query->where('country', $request->input('country'));
-                // }
-                // if ($request->has('address')) {
-                //     $query->where('address', $request->input('address'));
-                // }
-                // if ($request->has('number_of_rooms')) {
-                //     $query->where('number_of_rooms', '>=', $request->input('number_of_rooms'));
-                // }
-                // if ($request->has('amenities')) {
-                //     $amenities = explode(',', $request->input('amenities'));
-                //     $query->where(function ($q) use ($amenities) {
-                //         foreach ($amenities as $amenity) {
-                //             $q->orWhere('amenities', 'LIKE', '%' . trim($amenity) . '%');
-                //         }
-                //     });
-                // }
-                //   فوزي لو حبيت ممكن تزودهم .
             });
 
         if ($request->has('start_date') && $request->has('end_date')) {
@@ -320,23 +291,20 @@ class PropertyController extends Controller
                     'data' => []
                 ], 200);
             }
+
             if ($startDate->gt($endDate)) {
                 return response()->json(['message' => 'The start date cannot be after the end date.'], 200);
             }
+
             if ($endDate->lt($startDate)) {
                 return response()->json(['message' => 'The end date cannot be before the start date.'], 200);
             }
 
-            $query->where(function ($query) use ($startDate, $endDate) {
-                $query->where('properties.status', 'accepted');
-
-                $query->whereNull('bookings.id')
-                    ->orWhere(function ($query) use ($startDate, $endDate) {
-                        $query->where('bookings.status', '!=', 'accepted')
-                            ->orWhere(function ($query) use ($startDate, $endDate) {
-                                $query->where('bookings.end_date', '<', $startDate)
-                                    ->orWhere('bookings.start_date', '>', $endDate);
-                            });
+            $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
+                $bookingQuery->where('status', 'accepted')
+                    ->where(function ($dateQuery) use ($startDate, $endDate) {
+                        $dateQuery->where('end_date', '>=', $startDate)
+                            ->where('start_date', '<=', $endDate);
                     });
             });
         } else {
@@ -349,13 +317,13 @@ class PropertyController extends Controller
             return response()->json(['message' => 'No properties found'], 200);
         }
 
-        // return response()->json([
-        //     'status' => 200,
-        //     'message' => 'Data returned successfully',
-        //     'data' => $properties
-        // ]);
-        return PropertyResource::collection($properties);
+        return response()->json([
+            'status' => '200',
+            'message' => 'Data returned successfully',
+            'data' => PropertyResource::collection($properties),
+        ]);
     }
+
     public function getpropertycategory($id)
     {
         $category = Category::find($id);
