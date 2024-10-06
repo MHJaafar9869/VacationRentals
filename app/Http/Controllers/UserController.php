@@ -21,6 +21,20 @@ class UserController extends Controller
         return ApiResponse::sendResponse(200, 'Success', UserResource::make($user));
     }
 
+    public function getUserById($id)
+    {
+        // Fetch the user by ID
+        $user = User::with(['payments', 'favorites', 'reviews'])->find($id);
+
+        // Check if the user exists
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        // Return the user data using UserResource
+        return new UserResource($user);
+    }
+
     public function updateProfile(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
