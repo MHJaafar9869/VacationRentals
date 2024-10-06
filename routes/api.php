@@ -15,6 +15,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\StripePaymentController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
@@ -89,8 +90,8 @@ Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 Route::put('/users/{id}', [UserController::class, 'updateProfile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
-
-
+Route::middleware('auth:sanctum')->get('/user/payments', [UserController::class, 'userWithPayments']);
+Route::middleware('auth:sanctum')->get('/owner/details', [OwnerController::class, 'ownerDetails']);
 // ===================Admin Routes====================
 Route::controller(AdminController::class)
     ->prefix('admin')

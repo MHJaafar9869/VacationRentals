@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ApiResponse;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -11,16 +13,12 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
 
-    public function getUserInfo(Request $request){
-        $user = $request->user();
-        return response()->json($user, 200);
-    }
-  
+   
 
-    public function getUserProfile($id)
+    public function userWithPayments(Request $request)
     {
-        $user = User::findOrFail($id);
-        return response()->json($user, 200);
+        $user = $request->user()->load('payments'); 
+        return ApiResponse::sendResponse(200, 'Success', UserResource::make($user));
     }
 
     public function updateProfile(Request $request, $id)

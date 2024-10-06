@@ -2,12 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\OwnerResource;
 use Illuminate\Http\Request;
 use App\Models\Owner;
 use Illuminate\Support\Facades\Validator;
 
 class OwnerController extends Controller
 {
+    public function ownerDetails(Request $request)
+{
+    $owner = $request->user(); 
+
+
+    $ownerWithPropertiesAndBookings = $owner->load(['properties.booking']);
+    
+    return response()->json(new OwnerResource($ownerWithPropertiesAndBookings));
+}
     public function show($id)
     {
         $owner = Owner::find($id);
