@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Owner;
+use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\URL;
@@ -25,7 +27,12 @@ class AppServiceProvider extends ServiceProvider
     {
 
         ResetPassword::createUrlUsing(function (object $notifiable, string $token) {
-            return config('app.frontend_url') . "/password-reset/$token?email={$notifiable->getEmailForPasswordReset()}";
+            if ($notifiable instanceof Owner) {
+                $users = 'owners';
+            } elseif ($notifiable instanceof User) {
+                $users = 'users';
+            }
+            return config('app.frontend_url') . "/password-reset/{$users}/$token?email={$notifiable->getEmailForPasswordReset()}";
         });
 
         VerifyEmail::createUrlUsing(function (object $notifiable) {
