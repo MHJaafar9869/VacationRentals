@@ -29,9 +29,9 @@ class PropertyResource extends JsonResource
             "status" => $this->status,
             "createdAt" => $this->created_at,
             "modifiedAt" => $this->updated_at,
-            "category_id" => $this->category->id,
+            "category_id" => CategoryResource::collection($this->category),
             // "property_type" => $this->category->name,
-            // "owner_name" => $this->owner->name,
+            "owner_name" => $this->owner->name,
             'images' => PropertyImageResource::collection($this->propertyImages),
             'amenities' => AmenityResource::collection($this->propertyAmenities),
         ];

@@ -18,8 +18,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class PropertyController extends Controller
+class PropertyController extends Controller 
 {
+
+   
     public function index()
     {
         $property = Property::all()->where('status', '==', 'accepted');
@@ -42,7 +44,7 @@ class PropertyController extends Controller
             'address' => 'required',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
-            'owner_id' => 'required',
+            // 'owner_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -74,8 +76,8 @@ class PropertyController extends Controller
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
             'latitude' => $coordinates['latitude'],
-            'longitude' => $coordinates['longitude'],
-            'owner_id' => $request->owner_id,
+            'longitude' => $coordinates['longitude'],            
+            'owner_id' => Auth::guard('sanctum')->user()->id,
         ]);
 
         return ApiResponse::sendResponse(200, 'Property added successfully', $property);
@@ -347,12 +349,12 @@ class PropertyController extends Controller
             return response()->json(['message' => 'No properties found'], 200);
         }
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Data returned successfully',
-            'data' => $properties
-        ]);
-        // return PropertyResource::collection($properties);
+        // return response()->json([
+        //     'status' => 200,
+        //     'message' => 'Data returned successfully',
+        //     'data' => $properties
+        // ]);
+        return PropertyResource::collection($properties);
     }
     public function getpropertycategory($id)
     {

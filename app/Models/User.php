@@ -46,6 +46,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
+    public function payments(){
+
+        return $this->hasMany(Payment::class);
+    }
     /**
      * Get the attributes that should be cast.
      *

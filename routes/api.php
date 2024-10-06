@@ -21,12 +21,13 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/user/info', [UserController::class, 'getUserInfo'])->middleware('auth:sanctum');
 Route::apiResource('/categories', CategoryController::class);
 
 // >Property Route< //
 Route::apiResource("property", PropertyController::class);
-Route::post('property/{id}/amenities', [PropertyController::class, 'storeAmenities']);
-Route::post('property/{id}/images', [PropertyController::class, 'storeImages']);
+Route::post('property/{id}/amenities', [PropertyController::class, 'storeAmenities'])->middleware('auth:sanctum');
+Route::post('property/{id}/images', [PropertyController::class, 'storeImages'])->middleware('auth:sanctum');
 // ################ //
 // >Route For Stripe< //
 Route::post('/payment', [StripePaymentController::class, 'createPaymentIntent']);
@@ -77,12 +78,12 @@ Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
 
 // ===================Admin Routes====================
-Route::controller(AdminController::class)->middleware('auth:sanctum')->prefix('admin')->group(function () {
-    Route::get('/users', 'users');
-    Route::get('/owners', 'owners');
-    Route::get('/properties', 'properties');
+// Route::controller(AdminController::class)->prefix('admin')->group(function () {
+//     Route::get('/users', 'users');
+//     Route::get('/owners', 'owners');
+//     Route::get('/properties', 'properties');
 
-});
+// });
 
 
 Route::put('/users/{id}', [UserController::class, 'updateProfile']);
@@ -115,7 +116,7 @@ Route::post('/email/verification-notification', [EmailVerificationNotificationCo
 Route::post('/properties/{id}/accept', [AdminController::class, 'acceptProperty']);
 Route::post('/properties/{id}/reject', [AdminController::class, 'rejectProperty']);
 Route::controller(StripePaymentController::class)->group(function () {
-    Route::post('stripe', 'stripe')->name('stripe');
+    Route::post('stripe', 'stripe')->name('stripe')->middleware('auth:sanctum');
     Route::get('success', 'success')->name('success');
     Route::get('cancel', 'cancel')->name('cancel');
 });
