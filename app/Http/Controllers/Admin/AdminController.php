@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PropertyResource;
 use App\Mail\PropertyAccepted;
 use App\Mail\PropertyRejected;
 use App\Models\Owner;
@@ -26,7 +27,9 @@ class AdminController extends Controller
 
     public function properties(){
         $properties = Property::all();
-        return ApiResponse::sendResponse(200, 'Success', $properties);
+        return PropertyResource::collection($properties);
+        
+        // ApiResponse::sendResponse(200, 'Success', $properties);
     }
 
 
