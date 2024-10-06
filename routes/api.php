@@ -92,7 +92,7 @@ Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
 Route::middleware('auth:sanctum')->get('/user/payments', [UserController::class, 'userWithPayments']);
 Route::middleware('auth:sanctum')->get('/owner/details', [OwnerController::class, 'ownerDetails']);
-// ===================Admin Routes====================
+Route::get('/users/{id}', [UserController::class, 'getUserById']);// ===================Admin Routes====================
 Route::controller(AdminController::class)
     ->prefix('admin')
     ->middleware('auth:sanctum')
