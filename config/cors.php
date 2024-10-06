@@ -15,13 +15,14 @@ return [
     |
     */
 
-    'paths' => ['*'],
+    'paths' => ['api/*'],
 
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [env('FRONTEND_URL'),
-    'http://localhost:3000', // existing origin
-    'http://localhost:4200', // add this line for Angular
+    'http://localhost:3000', 
+    'http://localhost:4200',
+    '*', 
 ],
 
     'allowed_origins_patterns' => [],

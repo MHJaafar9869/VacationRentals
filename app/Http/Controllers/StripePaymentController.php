@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Owner;
 use App\Models\Property;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use SebastianBergmann\Diff\Diff;
 use Stripe\Account;
 use Stripe\AccountLink;
@@ -41,9 +43,12 @@ class StripePaymentController extends Controller
                 'metadata' => [  // Add metadata to the session
                     'product_name' => $request->input('product_name'),
                     'quantity' => $request->input('quantity', 1),
+                    'start_date' => $request->input('start_date'),
+                    'end_date' => $request->input('end_date'),
+                    'user_id'=> Auth::id(),
+                    'propertyId' => $request->input('propertyId'),
                 ],
             ]);
-    
             if (isset($response->id)) {
                 return response()->json([
                     'status' => 'success',
@@ -61,6 +66,8 @@ class StripePaymentController extends Controller
 
     public function success(Request $request)
     {
+            // dd($request->input('propertyId'));
+
         try {
             if ($request->has('session_id')) {
                 $stripe = new \Stripe\StripeClient(config('stripe.stripe_sk'));
@@ -69,21 +76,32 @@ class StripePaymentController extends Controller
     
                 $payment = new \App\Models\Payment();
                 $payment->payment_id = $response->id;
-                $payment->product_name = $response->metadata->product_name;  // Retrieve product name from metadata
+                $payment->product_name = $response->metadata->product_name;  
                 $payment->amount = $response->amount_total; 
-                $payment->quantity = $response->metadata->quantity;  // Retrieve quantity from metadata
+                $payment->quantity = $response->metadata->quantity;  
                 $payment->currency = $response->currency;
                 $payment->payer_name = $response->customer_details->name ?? 'N/A';
                 $payment->payer_email = $response->customer_details->email ?? 'N/A';
                 $payment->payment_status = $response->payment_status;
                 $payment->payment_method = 'Stripe';
-                $payment->save();
-                
+                $payment->start_date = $response->metadata->start_date;  // Getting start_date from metadata
+                $payment->end_date = $response->metadata->end_date; 
+                $payment->user_id = $response->metadata->user_id;
+                $payment->save();                
                 $property = Property::where('name', $response->metadata->product_name)->first();
                 $owner = Owner::where('id', $property->owner_id)->first();
-                $owner->wallet += $response->amount_total / 100; // to insert in in $
+                $owner->wallet += $response->amount_total / 100; 
                 $owner->save();
-                // dd($owner->wallet);
+                $booking = new Booking();
+                $booking->user_id = $response->metadata->user_id;
+                $booking->property_id = $response->metadata->propertyId;
+                $booking->start_date = $response->metadata->start_date;
+                $booking->end_date = $response->metadata->end_date;
+                $booking->save();
+
+                
+                  
+
                 return redirect('http://localhost:4200/success');  
             } else {
                 return response()->json(['status' => 'error', 'message' => 'No session ID provided'], 400);
