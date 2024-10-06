@@ -77,7 +77,7 @@ Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
 
 // ===================Admin Routes====================
-Route::controller(AdminController::class)->prefix('admin')->group(function () {
+Route::controller(AdminController::class)->middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/users', 'users');
     Route::get('/owners', 'owners');
     Route::get('/properties', 'properties');
