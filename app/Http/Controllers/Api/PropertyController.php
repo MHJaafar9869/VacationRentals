@@ -38,6 +38,7 @@ class PropertyController extends Controller
             'location' => 'required | min:5 | max:255',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
+            'sleeps' => 'required | min:1',
         ]);
 
         if ($validator->fails()) {
@@ -179,6 +180,9 @@ class PropertyController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'amenities' => 'required|array',
             'amenities.*' => 'string|max:255',
+            'sleeps' => 'required|min:1',
+            'bedrooms' => 'required|min:1',
+            'bathrooms' => 'required|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -197,6 +201,9 @@ class PropertyController extends Controller
             'location' => $request->location,
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
+            'sleeps' => $request->sleeps,
+            'bedrooms' => $request->bedrooms,
+            'bathrooms' => $request->bathrooms,
         ]);
 
         if ($request->hasFile('images')) {

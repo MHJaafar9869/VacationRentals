@@ -29,6 +29,8 @@ Route::apiResource('/categories', CategoryController::class);
 Route::apiResource("property", PropertyController::class);
 Route::post('property/{id}/amenities', [PropertyController::class, 'storeAmenities'])->middleware('auth:sanctum');
 Route::post('property/{id}/images', [PropertyController::class, 'storeImages'])->middleware('auth:sanctum');
+
+Route::post('/properties/filter', [PropertyController::class, 'filter']);
 // ################ //
 // >Route For Stripe< //
 Route::post('/payment', [StripePaymentController::class, 'createPaymentIntent']);
@@ -114,6 +116,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites', [FavoriteController::class, 'addToFavorites']);
     Route::delete('/favorites/{property_id}', [FavoriteController::class, 'removeFromFavorites']);
     Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
+    Route::post('/favorites/toggle', [FavoriteController::class, 'toggleFavorite']);
 });
 
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)->name('verification.verify')->middleware('auth:sanctum');
