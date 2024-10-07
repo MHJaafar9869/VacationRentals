@@ -18,6 +18,20 @@ use Illuminate\Support\Facades\Validator;
 class AdminController extends Controller
 {
     //
+    public function getOwnerDetails($id){
+        $owner = Owner::where('id', $id)->where('role', 'owner')->with(['properties'])->first();
+        if (!$owner) {
+            return response()->json([
+                'message' => 'Owner not found or not authorized.'
+            ], 404);
+        }
+
+        // Return the owner details with payments, favorites, and reviews relationships
+        return response()->json([
+            'owner' => $owner
+        ], 200);
+    
+    }
     public function users(){
         $users = User::all();
         return ApiResponse::sendResponse(200, 'Success', $users);
