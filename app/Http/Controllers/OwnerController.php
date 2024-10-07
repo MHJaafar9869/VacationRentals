@@ -12,6 +12,9 @@ class OwnerController extends Controller
 
 {
 
+   
+
+
     public function getOwnerDetails(Request $request)
     {
         $owner = $request->user(); 
