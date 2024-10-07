@@ -46,7 +46,7 @@ class GmailController extends Controller
                 'role' => 'owner',
             ]);
 
-            $token = $owner->createToken('YourAppName')->plainTextToken;
+            $token = $owner->createToken('owner_auth_token')->plainTextToken;
 
             return redirect('http://localhost:4200/login/owner?token=' . $token . '&name=' . urlencode($owner->name) . '&email=' . urlencode($owner->email) . '&role=owner');
         } else {
