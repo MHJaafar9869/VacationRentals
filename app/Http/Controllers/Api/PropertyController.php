@@ -5,17 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PropertyResource;
-use App\Http\Resources\PropertyResourse;
 use App\Models\Amenity;
 use App\Models\Category;
 use App\Models\Property;
-use App\Models\PropertyAmenity;
 use App\Models\PropertyImage;
 use Carbon\Carbon;
-// use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class PropertyController extends Controller
@@ -39,12 +35,9 @@ class PropertyController extends Controller
             'description' => 'required | min:10',
             'bedrooms' => 'required | integer | min:1',
             'bathrooms' => 'required | integer | min:1',
-            'city' => 'required',
-            'country' => 'required',
-            'address' => 'required',
+            'location' => 'required | min:5 | max:255',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
-            // 'owner_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -55,7 +48,7 @@ class PropertyController extends Controller
             ], 422);
         }
 
-        $fullAddress = $request->address . ', ' . $request->city . ', ' . $request->country;
+        $fullAddress = $request->location;
         $coordinates = $this->getCoordinatesFromNominatim($fullAddress);
 
         if (!$coordinates) {
@@ -70,9 +63,7 @@ class PropertyController extends Controller
             'description' => $request->description,
             'bedrooms' => $request->bedrooms,
             'bathrooms' => $request->bathrooms,
-            'city' => $request->city,
-            'country' => $request->country,
-            'address' => $request->address,
+            'location' => $request->location,
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
             'latitude' => $coordinates['latitude'],
@@ -179,11 +170,9 @@ class PropertyController extends Controller
             'name' => 'required | max:255',
             'headline' => 'required | max:255',
             'description' => 'required',
-            'number_of_rooms' => 'required | integer | min:1',
+            'sleeps' => 'required | integer | min:1',
             'image' => 'required',
-            'city' => 'required',
-            'country' => 'required',
-            'address' => 'required',
+            'location' => 'required',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
             'images' => 'required|array',
@@ -204,10 +193,8 @@ class PropertyController extends Controller
             'headline' => $request->headline,
             'description' => $request->description,
             'amenities' => $request->amenities,
-            'number_of_rooms' => $request->number_of_rooms,
-            'city' => $request->city,
-            'country' => $request->country,
-            'address' => $request->address,
+            'sleeps' => $request->sleeps,
+            'location' => $request->location,
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
         ]);
@@ -252,8 +239,8 @@ class PropertyController extends Controller
                 if ($request->has('name')) {
                     $query->where('name', 'like', '%' . $request->input('name') . '%');
                 }
-                if ($request->has('city')) {
-                    $query->where('city', $request->input('city'))->where('status', 'accepted');
+                if ($request->has('location')) {
+                    $query->where('location', $request->input('location'))->where('status', 'accepted');
                 }
                 if ($request->has('sleeps')) {
                     $query->where('sleeps', '>=', $request->input('sleeps'))->where('status', 'accepted');
@@ -348,9 +335,6 @@ class PropertyController extends Controller
 
         return response()->json(['error' => 'No results found'], 404);
     }
-
-
-
 
     public function getpropertycategory($id)
     {
