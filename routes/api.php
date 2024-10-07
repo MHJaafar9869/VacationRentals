@@ -38,6 +38,7 @@ Route::get('/amenities', [PropertyController::class, 'getAmenities']);
 // ================== //
 // >Booking related< //
 Route::get('/properties/search', [PropertyController::class, 'search']);
+Route::get('/location-suggestions', [PropertyController::class, 'getSuggestions']);
 
 // ================= //
 
