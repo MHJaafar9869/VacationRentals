@@ -116,6 +116,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites', [FavoriteController::class, 'addToFavorites']);
     Route::delete('/favorites/{property_id}', [FavoriteController::class, 'removeFromFavorites']);
     Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
+    Route::post('/favorites/toggle', [FavoriteController::class, 'toggleFavorite']);
 });
 
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)->name('verification.verify')->middleware('auth:sanctum');
