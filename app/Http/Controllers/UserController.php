@@ -13,6 +13,17 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
 
+    public function getUserDetails(Request $request){
+        $user = $request->user();
+
+        $imageUrl = $user->image ? url('images/posts/' . $user->image) : null;  // Full URL for image
+
+        return response()->json([
+            'name' => $user->name,
+            'wallet' => $user->wallet,
+            'image' => $imageUrl,
+        ]);
+    }
    
 
     public function userWithPayments(Request $request)

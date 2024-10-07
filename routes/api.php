@@ -130,3 +130,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('/properties/{id}/reviews', [ReviewController::class, 'getPropertyReviews']); // Get reviews for property
 Route::delete('/reviews/{id}', [ReviewController::class, 'deleteReview']);
+
+
+
+
+Route::middleware('auth:sanctum')->get('/owner', [OwnerController::class, 'getOwnerDetails']);
+Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUserDetails']);
