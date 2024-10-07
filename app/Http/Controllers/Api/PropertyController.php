@@ -355,9 +355,6 @@ class PropertyController extends Controller
         return response()->json(['error' => 'No results found'], 404);
     }
 
-
-
-
     public function getpropertycategory($id)
     {
         $category = Category::find($id);
@@ -385,43 +382,4 @@ class PropertyController extends Controller
 
         return response()->json(['data' => $properties], 200);
     }
-
-    // public function searchAvailableProperties(Request $request)
-    // {
-    //     $start_date = $request->start_date;
-    //     $end_date = $request->end_date;
-
-    //     $availableProperties = DB::table('properties AS p')
-    //         ->whereNotExists(function ($query) use ($start_date, $end_date) {
-    //             $query->select(DB::raw(1))
-    //                 ->from('booking AS b')
-    //                 ->whereColumn('b.property_id', 'p.id')
-    //                 ->where('b.status', 'confirmed')
-    //                 ->where(function ($query) use ($start_date, $end_date) {
-    //                     $query->whereBetween('b.start_date', [$start_date, $end_date])
-    //                         ->orWhereBetween('b.end_date', [$start_date, $end_date])
-    //                         ->orWhere(function ($query) use ($start_date, $end_date) {
-    //                             $query->where('b.start_date', '<=', $start_date)
-    //                                 ->where('b.end_date', '>=', $end_date);
-    //                         });
-    //                 });
-    //         })
-    //         ->get();
-
-    //     return response()->json($availableProperties);
-    // }
 }
-
-// if ($request->hasFile('images')) {
-//     foreach ($request->file('images') as $image) {
-//         $imagePath = $image->store('images/properties', 'public');
-
-//         $imageUrl = asset('storage/' . $imagePath);
-
-//         $property->propertyImages()->create(['image_path' => $imageUrl]);
-//     }
-// }
-
-// foreach ($request->property_amenities as $amenity_id) {
-//     $property->propertyAmenities()->create(['amenity_id' => $amenity_id]);
-// }
