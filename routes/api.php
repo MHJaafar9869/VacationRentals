@@ -136,3 +136,5 @@ Route::delete('/reviews/{id}', [ReviewController::class, 'deleteReview']);
 
 Route::middleware('auth:sanctum')->get('/owner', [OwnerController::class, 'getOwnerDetails']);
 Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUserDetails']);
+
+Route::get('/admin/owner/{id}', [AdminController::class, 'getOwnerDetails']);
