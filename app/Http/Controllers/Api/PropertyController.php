@@ -335,6 +335,23 @@ class PropertyController extends Controller
         $property = $category->properties;
         return propertyResource::collection($property);
     }
+
+    public function filter(Request $request)
+    {
+        $request->validate([
+            'amenity' => 'required|array',
+            'amenity.*' => 'integer|exists:amenities,id',
+        ]);
+
+        $amenityIds = $request->input('amenity');
+
+        $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
+            $query->whereIn('id', $amenityIds);
+        })->get();
+
+        return response()->json(['data' => $properties], 200);
+    }
+
     // public function searchAvailableProperties(Request $request)
     // {
     //     $start_date = $request->start_date;

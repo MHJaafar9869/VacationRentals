@@ -29,6 +29,8 @@ Route::apiResource('/categories', CategoryController::class);
 Route::apiResource("property", PropertyController::class);
 Route::post('property/{id}/amenities', [PropertyController::class, 'storeAmenities'])->middleware('auth:sanctum');
 Route::post('property/{id}/images', [PropertyController::class, 'storeImages'])->middleware('auth:sanctum');
+
+Route::post('/properties/filter', [PropertyController::class, 'filter']);
 // ################ //
 // >Route For Stripe< //
 Route::post('/payment', [StripePaymentController::class, 'createPaymentIntent']);
