@@ -40,6 +40,7 @@ Route::get('/amenities', [PropertyController::class, 'getAmenities']);
 // ================== //
 // >Booking related< //
 Route::get('/properties/search', [PropertyController::class, 'search']);
+Route::get('/location-suggestions', [PropertyController::class, 'getSuggestions']);
 
 // ================= //
 
@@ -94,16 +95,21 @@ Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
 Route::middleware('auth:sanctum')->get('/user/payments', [UserController::class, 'userWithPayments']);
 Route::middleware('auth:sanctum')->get('/owner/details', [OwnerController::class, 'ownerDetails']);
-Route::get('/users/{id}', [UserController::class, 'getUserById']);// ===================Admin Routes====================
+Route::get('/users/{id}', [UserController::class, 'getUserById']); // ===================Admin Routes====================
 Route::controller(AdminController::class)
     ->prefix('admin')
     ->middleware('auth:sanctum')
     ->group(function () {
         Route::get('/users', 'users');
         Route::get('/owners', 'owners');
-        Route::get('/properties', 'properties');
+        // Route::get('/properties', 'properties');
         Route::delete('/deleteuser/{id}', 'deleteuser');
         Route::delete('/deleteowner/{id}', 'deleteowner');
+        Route::patch('/properties/{id}/update-status',  'update');
+        Route::post('/send-email/{id}',  'sendEmail');
+        Route::get('/properties',  'index');
+        Route::get('/properties/{id}',  'show');
+        Route::get('/showowner/{id}',  'showowner');
     });
 // ===================End Admin Routes====================
 Route::middleware('auth:sanctum')->group(function () {
@@ -132,3 +138,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('/properties/{id}/reviews', [ReviewController::class, 'getPropertyReviews']); // Get reviews for property
 Route::delete('/reviews/{id}', [ReviewController::class, 'deleteReview']);
+
+Route::middleware('auth:sanctum')->get('/owner', [OwnerController::class, 'getOwnerDetails']);
+Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUserDetails']);
+
+Route::get('/admin/owner/{id}', [AdminController::class, 'getOwnerDetails']);

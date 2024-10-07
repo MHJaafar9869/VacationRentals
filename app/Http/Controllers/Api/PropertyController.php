@@ -171,23 +171,8 @@ class PropertyController extends Controller
 
     public function show($id)
     {
-
         $property = Property::with(['propertyImages', 'propertyAmenities'])->findOrFail($id);
-
-
         return new PropertyResource($property);
-        // $property = Property::with(['images', 'amenities'])->find($id);
-        // return response()->json(
-        //     [
-        //         'message' => 'Property added successfully',
-        //         "data" => [
-        //             new PropertyResource($property),
-        //             // $property->propertyImages()->load(['images']),
-        //             // $property->propertyAmenities()->load(['amenity'])
-        //         ]
-        //     ],
-        //     200
-        // );
     }
 
     public function update(Request $request, Property $property)
@@ -329,6 +314,49 @@ class PropertyController extends Controller
             'data' => PropertyResource::collection($properties),
         ]);
     }
+
+    public function getSuggestions(Request $request)
+    {
+        $query = $request->input('query');
+
+        if (!$query) {
+            return response()->json(['error' => 'Query is required'], 400);
+        }
+
+        $url = "https://nominatim.openstreetmap.org/search?q=" . urlencode($query) . "&format=json&limit=5&accept-language=en";
+
+        $options = [
+            "http" => [
+                "header" => "User-Agent: MyAppName/1.0 (email@example.com)"
+            ]
+        ];
+
+        $context = stream_context_create($options);
+        $response = file_get_contents($url, false, $context);
+
+        if ($response === false) {
+            return response()->json(['error' => 'Error fetching suggestions'], 500);
+        }
+
+        $json = json_decode($response, true);
+
+        if (!empty($json)) {
+            $suggestions = [];
+            foreach ($json as $result) {
+                $suggestions[] = [
+                    'display_name' => $result['display_name'],
+                    'lat' => $result['lat'],
+                    'lon' => $result['lon'],
+                ];
+            }
+            return response()->json($suggestions);
+        }
+
+        return response()->json(['error' => 'No results found'], 404);
+    }
+
+
+
 
     public function getpropertycategory($id)
     {
