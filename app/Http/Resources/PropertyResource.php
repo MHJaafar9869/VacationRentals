@@ -29,9 +29,11 @@ class PropertyResource extends JsonResource
             "status" => $this->status,
             "createdAt" => $this->created_at,
             "modifiedAt" => $this->updated_at,
-            "category_id" => $this->category->id,  // Assuming category_id is selected from DB
-            "property_type" => $this->category->name,  // Make sure this is available from the query
+            "category_id" => $this->category->id,
+            "property_type" => $this->category->name,
             "owner_name" => $this->owner->name,
+            "longitude" => $this->longitude,
+            "latitude" => $this->latitude,
             'images' => PropertyImageResource::collection($this->propertyImages),
             'amenities' => AmenityResource::collection($this->propertyAmenities),
         ];

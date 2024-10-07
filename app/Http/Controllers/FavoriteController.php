@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\FavoriteResource;
 use App\Models\Favorite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +32,6 @@ class FavoriteController extends Controller
     {
         $favorites = Favorite::with('properties', '')->where('user_id', Auth::id())->get();
 
-        return response()->json($favorites);
+        return FavoriteResource::collection($favorites);
     }
 }

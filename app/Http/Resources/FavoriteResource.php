@@ -19,7 +19,19 @@ class FavoriteResource extends JsonResource
             'user_id' => $this->user_id,
             'property_id' => $this->property_id,
             'property_name' => $this->properties->name,
-            'night_rate' => $this->properties->night_rate
+            // 'images' => PropertyImageResource::collection($this->propertyImages),
+            'night_rate' => $this->properties->night_rate,
+            "headline" => $this->properties->headline,
+            "description" => $this->properties->description,
+            "bedrooms" => $this->properties->bedrooms,
+            "bathrooms" => $this->properties->bathrooms,
+            "city" => $this->properties->city,
+            "country" => $this->properties->country,
+            "address" => $this->properties->address,
+            "nightRate" => $this->properties->night_rate,
+            "sleeps" => $this->properties->sleeps,
+            "property_type" => $this->properties->category->name,
+            'images'=> PropertyImageResource::collection($this->properties->propertyImages),
         ];
     }
 }
