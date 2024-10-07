@@ -44,6 +44,7 @@ class PropertyController extends Controller
             'address' => 'required',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
+            'sleeps' => 'required | min:1',
             // 'owner_id' => 'required',
         ]);
 
@@ -70,6 +71,7 @@ class PropertyController extends Controller
             'description' => $request->description,
             'bedrooms' => $request->bedrooms,
             'bathrooms' => $request->bathrooms,
+            'sleeps' => $request->sleeps,
             'city' => $request->city,
             'country' => $request->country,
             'address' => $request->address,
@@ -194,7 +196,6 @@ class PropertyController extends Controller
             'name' => 'required | max:255',
             'headline' => 'required | max:255',
             'description' => 'required',
-            'number_of_rooms' => 'required | integer | min:1',
             'image' => 'required',
             'city' => 'required',
             'country' => 'required',
@@ -205,6 +206,9 @@ class PropertyController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'amenities' => 'required|array',
             'amenities.*' => 'string|max:255',
+            'sleeps' => 'required|min:1',
+            'bedrooms' => 'required|min:1',
+            'bathrooms' => 'required|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -219,12 +223,14 @@ class PropertyController extends Controller
             'headline' => $request->headline,
             'description' => $request->description,
             'amenities' => $request->amenities,
-            'number_of_rooms' => $request->number_of_rooms,
             'city' => $request->city,
             'country' => $request->country,
             'address' => $request->address,
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
+            'sleeps' => $request->sleeps,
+            'bedrooms' => $request->bedrooms,
+            'bathrooms' => $request->bathrooms,
         ]);
 
         if ($request->hasFile('images')) {

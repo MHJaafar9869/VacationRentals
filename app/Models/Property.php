@@ -15,6 +15,7 @@ class Property extends Model
         "description",
         "bedrooms",
         "bathrooms",
+        "sleeps",
         "city",
         "country",
         "address",
@@ -49,7 +50,7 @@ class Property extends Model
     {
         return $this->belongsToMany(Amenity::class, 'property_amenities', 'property_id', 'amenity_id');
     }
-   
+
     // public function favorites()
     // {
     //     return $this->belongsToMany(Favorite::class);
