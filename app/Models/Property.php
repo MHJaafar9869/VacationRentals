@@ -16,6 +16,7 @@ class Property extends Model
         "bedrooms",
         "bathrooms",
         "location",
+        "sleeps",
         "night_rate",
         "status",
         "category_id",

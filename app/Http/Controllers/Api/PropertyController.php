@@ -65,6 +65,7 @@ class PropertyController extends Controller
             'bedrooms' => $request->bedrooms,
             'bathrooms' => $request->bathrooms,
             'location' => $request->location,
+            'sleeps' => $request->sleeps,
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
             'latitude' => $coordinates['latitude'],
