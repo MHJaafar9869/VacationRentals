@@ -93,16 +93,21 @@ Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
 Route::middleware('auth:sanctum')->get('/user/payments', [UserController::class, 'userWithPayments']);
 Route::middleware('auth:sanctum')->get('/owner/details', [OwnerController::class, 'ownerDetails']);
-Route::get('/users/{id}', [UserController::class, 'getUserById']);// ===================Admin Routes====================
+Route::get('/users/{id}', [UserController::class, 'getUserById']); // ===================Admin Routes====================
 Route::controller(AdminController::class)
     ->prefix('admin')
     ->middleware('auth:sanctum')
     ->group(function () {
         Route::get('/users', 'users');
         Route::get('/owners', 'owners');
-        Route::get('/properties', 'properties');
+        // Route::get('/properties', 'properties');
         Route::delete('/deleteuser/{id}', 'deleteuser');
         Route::delete('/deleteowner/{id}', 'deleteowner');
+        Route::patch('/properties/{id}/update-status',  'update');
+        Route::post('/send-email/{id}',  'sendEmail');
+        Route::get('/properties',  'index');
+        Route::get('/properties/{id}',  'show');
+        Route::get('/showowner/{id}',  'showowner');
     });
 // ===================End Admin Routes====================
 Route::middleware('auth:sanctum')->group(function () {
