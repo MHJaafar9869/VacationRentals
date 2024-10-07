@@ -30,29 +30,10 @@ class FavoriteController extends Controller
 
     public function getUserFavorites()
     {
+        // $favorites = Favorite::with('properties')->where('user_id', Auth::id())->get();
         $favorites = Favorite::with('properties', 'user')->where('user_id', Auth::id())->get();
+
 
         return FavoriteResource::collection($favorites);
     }
-    public function toggleFavorite(Request $request)
-{
-    // Check if the favorite already exists
-    $favorite = Favorite::where('user_id', Auth::id())
-        ->where('property_id', $request->property_id)
-        ->first();
-
-    if ($favorite) {
-        // If the favorite exists, remove it
-        $favorite->delete();
-        return response()->json(['message' => 'Property removed from favorites!'], 200);
-    } else {
-        // If the favorite doesn't exist, add it
-        $favorite = Favorite::create([
-            'user_id' => Auth::id(),
-            'property_id' => $request->property_id,
-        ]);
-
-        return response()->json(['message' => 'Property added to favorites!', 'favorite' => $favorite], 201);
-        }
-}
 }

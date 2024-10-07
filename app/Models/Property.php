@@ -15,10 +15,8 @@ class Property extends Model
         "description",
         "bedrooms",
         "bathrooms",
+        "location",
         "sleeps",
-        "city",
-        "country",
-        "address",
         "night_rate",
         "status",
         "category_id",
@@ -51,10 +49,6 @@ class Property extends Model
         return $this->belongsToMany(Amenity::class, 'property_amenities', 'property_id', 'amenity_id');
     }
 
-    // public function favorites()
-    // {
-    //     return $this->belongsToMany(Favorite::class);
-    // }
     public function favoritedByUsers()
     {
         return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
