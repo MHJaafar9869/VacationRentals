@@ -29,8 +29,9 @@ Route::apiResource('/categories', CategoryController::class);
 Route::apiResource("property", PropertyController::class);
 Route::post('property/{id}/amenities', [PropertyController::class, 'storeAmenities'])->middleware('auth:sanctum');
 Route::post('property/{id}/images', [PropertyController::class, 'storeImages'])->middleware('auth:sanctum');
-
 Route::post('/properties/filter', [PropertyController::class, 'filter']);
+Route::post('/properties/category', [PropertyController::class, 'filterByCategory']);
+
 // ################ //
 // >Route For Stripe< //
 Route::post('/payment', [StripePaymentController::class, 'createPaymentIntent']);
@@ -105,11 +106,11 @@ Route::controller(AdminController::class)
         // Route::get('/properties', 'properties');
         Route::delete('/deleteuser/{id}', 'deleteuser');
         Route::delete('/deleteowner/{id}', 'deleteowner');
-        Route::patch('/properties/{id}/update-status',  'update');
-        Route::post('/send-email/{id}',  'sendEmail');
-        Route::get('/properties',  'index');
-        Route::get('/properties/{id}',  'show');
-        Route::get('/showowner/{id}',  'showowner');
+        Route::patch('/properties/{id}/update-status', 'update');
+        Route::post('/send-email/{id}', 'sendEmail');
+        Route::get('/properties', 'index');
+        Route::get('/properties/{id}', 'show');
+        Route::get('/showowner/{id}', 'showowner');
     });
 // ===================End Admin Routes====================
 Route::middleware('auth:sanctum')->group(function () {
