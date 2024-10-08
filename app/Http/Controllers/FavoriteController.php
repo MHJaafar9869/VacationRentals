@@ -36,4 +36,26 @@ class FavoriteController extends Controller
 
         return FavoriteResource::collection($favorites);
     }
+
+    public function toggleFavorite(Request $request)
+{
+    
+    $favorite = Favorite::where('user_id', Auth::id())
+        ->where('property_id', $request->property_id)
+        ->first();
+
+    if ($favorite) {
+        
+        $favorite->delete();
+        return response()->json(['message' => 'Property removed from favorites!'], 200);
+    } else {
+        
+        $favorite = Favorite::create([
+            'user_id' => Auth::id(),
+            'property_id' => $request->property_id,
+        ]);
+
+        return response()->json(['message' => 'Property added to favorites!', 'favorite' => $favorite], 201);
+        }
+
 }
