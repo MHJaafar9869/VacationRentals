@@ -181,7 +181,6 @@ class PropertyController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'amenities' => 'required|array',
             'amenities.*' => 'string|max:255',
-            'sleeps' => 'required|min:1',
             'bedrooms' => 'required|min:1',
             'bathrooms' => 'required|min:1',
         ]);
@@ -202,7 +201,6 @@ class PropertyController extends Controller
             'location' => $request->location,
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
-            'sleeps' => $request->sleeps,
             'bedrooms' => $request->bedrooms,
             'bathrooms' => $request->bathrooms,
         ]);
@@ -355,4 +353,32 @@ class PropertyController extends Controller
         $property = $category->properties;
         return propertyResource::collection($property);
     }
+    public function filter(Request $request)
+    {
+        $request->validate([
+            'amenity' => 'required|array',
+            'amenity.*' => 'integer|exists:amenities,id',
+        ]);
+        $amenityIds = $request->input('amenity');
+        $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
+            $query->whereIn('id', $amenityIds);
+        })->get();
+        return response()->json(['data' => $properties], 200);
+    }
+
+    public function filterByCategory(Request $request)
+    {
+        $request->validate([
+            'category' => 'required|exists:categories,id'
+        ]);
+        $categoryId = $request->input('category');
+        $properties = Property::where('category_id', '=', $categoryId)->get();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Data returned successfully',
+            'data' => PropertyResource::collection($properties)
+        ], 200);
+    }
+
 }
