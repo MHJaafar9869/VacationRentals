@@ -404,4 +404,17 @@ class PropertyController extends Controller
         $property = $category->properties;
         return propertyResource::collection($property);
     }
+
+    public function delete($id)
+    {
+        $property = Property::find($id);
+
+        if (!$property) {
+            return response()->json(['message' => 'Property not found'], 404);
+        }
+
+        $property->delete();
+
+        return response()->json(['message' => 'Property deleted successfully']);
+    }
 }

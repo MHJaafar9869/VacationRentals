@@ -34,15 +34,12 @@ class UserController extends Controller
 
     public function getUserById($id)
     {
-        // Fetch the user by ID
-        $user = User::with(['payments', 'favorites', 'reviews'])->find($id);
+        $user = User::with(['payments', 'favorites', 'reviews.property'])->find($id);
 
-        // Check if the user exists
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        // Return the user data using UserResource
         return new UserResource($user);
     }
 
