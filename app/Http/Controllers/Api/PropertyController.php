@@ -121,6 +121,28 @@ class PropertyController extends Controller
 
         return response()->json(['message' => 'Amenities added successfully.'], 200);
     }
+    public function updateAmenities(Request $request, $propertyId)
+    {
+        $validator = Validator::make($request->all(), [
+            'amenities' => 'required|array',
+            'amenities.*' => 'exists:amenities,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $property = Property::findOrFail($propertyId);
+
+        $property->propertyAmenities()->detach();
+
+        $property->propertyAmenities()->attach($request->amenities);
+
+        return response()->json(['message' => 'Amenities updated successfully.'], 200);
+    }
 
     public function getAmenities()
     {
@@ -158,6 +180,35 @@ class PropertyController extends Controller
         }
 
         return response()->json(['message' => 'Images uploaded successfully.'], 201);
+    }
+    public function updateImages(Request $request, $propertyId)
+    {
+        $validator = Validator::make($request->all(), [
+            'images' => 'required|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:4189',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $property = Property::findOrFail($propertyId);
+
+        $property->propertyImages()->delete();
+
+        foreach ($request->file('images') as $image) {
+            $path = $image->store('property_images', 'public');
+
+            PropertyImage::create([
+                'property_id' => $property->id,
+                'image_path' => $path,
+            ]);
+        }
+
+        return response()->json(['message' => 'Images updated successfully.'], 200);
     }
 
     public function show($id)
@@ -353,32 +404,4 @@ class PropertyController extends Controller
         $property = $category->properties;
         return propertyResource::collection($property);
     }
-    public function filter(Request $request)
-    {
-        $request->validate([
-            'amenity' => 'required|array',
-            'amenity.*' => 'integer|exists:amenities,id',
-        ]);
-        $amenityIds = $request->input('amenity');
-        $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
-            $query->whereIn('id', $amenityIds);
-        })->get();
-        return response()->json(['data' => $properties], 200);
-    }
-
-    public function filterByCategory(Request $request)
-    {
-        $request->validate([
-            'category' => 'required|exists:categories,id'
-        ]);
-        $categoryId = $request->input('category');
-        $properties = Property::where('category_id', '=', $categoryId)->get();
-
-        return response()->json([
-            'status' => 200,
-            'message' => 'Data returned successfully',
-            'data' => PropertyResource::collection($properties)
-        ], 200);
-    }
-
 }

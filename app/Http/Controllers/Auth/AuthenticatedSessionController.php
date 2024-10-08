@@ -17,27 +17,27 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
     {
-        $validator = Validator::make($request->all(),([
+        $validator = Validator::make($request->all(), ([
             'email' => 'required|string|email|max:255',
             'password' => 'required|string|min:6',
-               
-           ]), [
-               'email.required' => 'Email is required',
-               'password.required' => 'Password is required',
-           ]);
-           if($validator->fails()){
-               return ApiResponse::sendResponse(200, 'Success', $validator->messages()->all());
-           }
-   
-           if(Auth::attempt(['email' => $request->email, 'password' => $request->password])){
-               $user = Auth::user();
-               $data['token'] = $user->createToken('auth_token')->plainTextToken;
-               $data['name'] = $user->name;
-               $data['email'] = $user->email;
-               return ApiResponse::sendResponse(200, 'Success Login', $data);
-           }else{
-               return ApiResponse::sendResponse(401, 'user cradentials not match', null);
-           }
+
+        ]), [
+            'email.required' => 'Email is required',
+            'password.required' => 'Password is required',
+        ]);
+        if ($validator->fails()) {
+            return ApiResponse::sendResponse(200, 'Success', $validator->messages()->all());
+        }
+
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = Auth::user();
+            $data['token'] = $user->createToken('auth_token')->plainTextToken;
+            $data['name'] = $user->name;
+            $data['email'] = $user->email;
+            return ApiResponse::sendResponse(200, 'Success Login', $data);
+        } else {
+            return ApiResponse::sendResponse(401, 'user cradentials not match', null);
+        }
     }
 
     /**
