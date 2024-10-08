@@ -37,7 +37,7 @@ class AdminController extends Controller
         return ApiResponse::sendResponse(200, 'Success', $users);
     }
     public function owners(){
-        $owners = Owner::all();
+        $owners = Owner::where('role', 'owner')->get();
         return ApiResponse::sendResponse(200, 'Success', $owners);
     }
 

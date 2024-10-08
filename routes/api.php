@@ -134,3 +134,4 @@ Route::middleware('auth:sanctum')->get('/owner', [OwnerController::class, 'getOw
 Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUserDetails']);
 
 Route::get('/admin/owner/{id}', [AdminController::class, 'getOwnerDetails']);
+Route::delete('/properties/{id}', [PropertyController::class, 'delete']);
