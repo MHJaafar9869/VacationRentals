@@ -34,6 +34,7 @@ class AuthenticatedSessionController extends Controller
             $data['token'] = $user->createToken('auth_token')->plainTextToken;
             $data['name'] = $user->name;
             $data['email'] = $user->email;
+            $data['id'] = $user->id;
             return ApiResponse::sendResponse(200, 'Success Login', $data);
         } else {
             return ApiResponse::sendResponse(401, 'user cradentials not match', null);
