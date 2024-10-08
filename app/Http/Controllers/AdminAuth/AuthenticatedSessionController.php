@@ -14,8 +14,8 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-   
-    
+
+
     public function store(LoginRequest $request)
     {
         $validator = Validator::make($request->all(), [
@@ -25,15 +25,15 @@ class AuthenticatedSessionController extends Controller
             'email.required' => 'Email is required',
             'password.required' => 'Password is required',
         ]);
-    
+
         if ($validator->fails()) {
             return ApiResponse::sendResponse(400, 'Validation failed', $validator->messages()->all());
         }
-    
+
         // Attempt to authenticate the owner
         if (Auth::guard('owner')->attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::guard('owner')->user();
-    
+
             // Check the user's role
             if ($user->role === 'admin') {
                 // Admin-specific response or redirect
@@ -48,13 +48,14 @@ class AuthenticatedSessionController extends Controller
                 $data['role'] = $user->role;
                 $data['name'] = $user->name;
                 $data['email'] = $user->email;
+                $data['id'] = $user->id;
                 return ApiResponse::sendResponse(200, 'Owner Login Success', $data); // Modify to redirect to owner page
             }
         } else {
             return ApiResponse::sendResponse(401, 'User credentials do not match', null);
         }
     }
-    
+
     /**
      * Destroy an authenticated session.
      */

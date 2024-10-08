@@ -7,16 +7,16 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-// use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
 
-    public function getUserDetails(Request $request){
+    public function getUserDetails(Request $request)
+    {
         $user = $request->user();
 
-        $imageUrl = $user->image ? url('images/posts/' . $user->image) : null;  // Full URL for image
+        $imageUrl = $user->image ? url('images/posts/' . $user->image) : null;
 
         return response()->json([
             'name' => $user->name,
@@ -24,11 +24,11 @@ class UserController extends Controller
             'image' => $imageUrl,
         ]);
     }
-   
+
 
     public function userWithPayments(Request $request)
     {
-        $user = $request->user()->load('payments'); 
+        $user = $request->user()->load('payments');
         return ApiResponse::sendResponse(200, 'Success', UserResource::make($user));
     }
 
@@ -41,6 +41,12 @@ class UserController extends Controller
         }
 
         return new UserResource($user);
+    }
+
+    public function getUserProfile($id)
+    {
+        $user = User::findOrFail($id);
+        return response()->json($user, 200);
     }
 
     public function updateProfile(Request $request, $id)
