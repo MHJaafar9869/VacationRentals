@@ -246,7 +246,7 @@ class PropertyController extends Controller
                     $query->where('name', 'like', '%' . $request->input('name') . '%');
                 }
                 if ($request->has('location')) {
-                    $query->where('location', $request->input('location'))->where('status', 'accepted');
+                    $query->where('location', '=', $request->input('location'))->where('status', 'accepted');
                 }
                 if ($request->has('sleeps')) {
                     $query->where('sleeps', '>=', $request->input('sleeps'))->where('status', 'accepted');
