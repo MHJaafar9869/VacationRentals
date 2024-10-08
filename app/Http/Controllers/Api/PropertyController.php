@@ -389,4 +389,30 @@ class PropertyController extends Controller
 
         return response()->json(['message' => 'Property deleted successfully']);
     }
+
+    public function filter(Request $request)
+    {
+        $request->validate([
+            'amenity' => 'required|array',
+            'amenity.*' => 'integer|exists:amenities,id',
+        ]);
+        $amenityIds = $request->input('amenity');
+        $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
+            $query->whereIn('id', $amenityIds);
+        })->get();
+        return response()->json(['data' => $properties], 200);
+    }
+    public function filterByCategory(Request $request)
+    {
+        $request->validate([
+            'category' => 'required|exists:categories,id'
+        ]);
+        $categoryId = $request->input('category');
+        $properties = Property::where('category_id', '=', $categoryId)->get();
+        return response()->json([
+            'status' => 200,
+            'message' => 'Data returned successfully',
+            'data' => PropertyResource::collection($properties)
+        ], 200);
+    }
 }
