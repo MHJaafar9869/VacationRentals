@@ -30,10 +30,13 @@ class FavoriteController extends Controller
 
     public function getUserFavorites()
     {
+        // $favorites = Favorite::with('properties')->where('user_id', Auth::id())->get();
         $favorites = Favorite::with('properties', 'user')->where('user_id', Auth::id())->get();
+
 
         return FavoriteResource::collection($favorites);
     }
+
     public function toggleFavorite(Request $request)
 {
     
@@ -54,5 +57,5 @@ class FavoriteController extends Controller
 
         return response()->json(['message' => 'Property added to favorites!', 'favorite' => $favorite], 201);
         }
-}
+
 }
