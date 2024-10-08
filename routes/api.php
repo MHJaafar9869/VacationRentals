@@ -15,7 +15,6 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\StripePaymentController;
-use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
@@ -28,7 +27,12 @@ Route::apiResource('/categories', CategoryController::class);
 // >Property Route< //
 Route::apiResource("property", PropertyController::class);
 Route::post('property/{id}/amenities', [PropertyController::class, 'storeAmenities'])->middleware('auth:sanctum');
+Route::put('property/{id}/updateamenities', [PropertyController::class, 'updateAmenities'])->middleware('auth:sanctum');
+
 Route::post('property/{id}/images', [PropertyController::class, 'storeImages'])->middleware('auth:sanctum');
+Route::put('property/{id}/updateimages', [PropertyController::class, 'updateImages'])->middleware('auth:sanctum');
+
+Route::get('property/{id}', [PropertyController::class, 'update'])->middleware('auth:sanctum');
 
 Route::post('/properties/filter', [PropertyController::class, 'filter']);
 // ################ //
@@ -41,9 +45,7 @@ Route::get('/amenities', [PropertyController::class, 'getAmenities']);
 // >Booking related< //
 Route::get('/properties/search', [PropertyController::class, 'search']);
 Route::get('/location-suggestions', [PropertyController::class, 'getSuggestions']);
-
 // ================= //
-
 
 Route::get('/properties/category/{id}', [PropertyController::class, 'getpropertycategory']);
 
@@ -79,30 +81,19 @@ Route::put('/users/{id}', [UserController::class, 'updateProfile']);
 Route::get('/owners/{id}', [OwnerController::class, 'show']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
-
-
-// ===================Admin Routes====================
-// Route::controller(AdminController::class)->prefix('admin')->group(function () {
-//     Route::get('/users', 'users');
-//     Route::get('/owners', 'owners');
-//     Route::get('/properties', 'properties');
-
-// });
-
-
 Route::put('/users/{id}', [UserController::class, 'updateProfile']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
 Route::middleware('auth:sanctum')->get('/user/payments', [UserController::class, 'userWithPayments']);
 Route::middleware('auth:sanctum')->get('/owner/details', [OwnerController::class, 'ownerDetails']);
-Route::get('/users/{id}', [UserController::class, 'getUserById']); // ===================Admin Routes====================
+Route::get('/users/{id}', [UserController::class, 'getUserById']);
+// ===================Admin Routes====================
 Route::controller(AdminController::class)
     ->prefix('admin')
     ->middleware('auth:sanctum')
     ->group(function () {
         Route::get('/users', 'users');
         Route::get('/owners', 'owners');
-        // Route::get('/properties', 'properties');
         Route::delete('/deleteuser/{id}', 'deleteuser');
         Route::delete('/deleteowner/{id}', 'deleteowner');
         Route::patch('/properties/{id}/update-status',  'update');
@@ -122,7 +113,6 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)->name('verification.verify')->middleware('auth:sanctum');
 Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])->middleware('auth:sanctum')->name('verification.send');
 
-
 Route::post('/properties/{id}/accept', [AdminController::class, 'acceptProperty']);
 Route::post('/properties/{id}/reject', [AdminController::class, 'rejectProperty']);
 Route::controller(StripePaymentController::class)->group(function () {
@@ -132,12 +122,10 @@ Route::controller(StripePaymentController::class)->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/reviews', [ReviewController::class, 'addReview']); // Add review
-
-
+    Route::post('/reviews', [ReviewController::class, 'addReview']);
 });
 
-Route::get('/properties/{id}/reviews', [ReviewController::class, 'getPropertyReviews']); // Get reviews for property
+Route::get('/properties/{id}/reviews', [ReviewController::class, 'getPropertyReviews']);
 Route::delete('/reviews/{id}', [ReviewController::class, 'deleteReview']);
 
 Route::middleware('auth:sanctum')->get('/owner', [OwnerController::class, 'getOwnerDetails']);
