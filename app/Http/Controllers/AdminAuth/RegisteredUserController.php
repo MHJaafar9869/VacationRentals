@@ -24,14 +24,13 @@ class RegisteredUserController extends Controller
         try {
             $request->validate([
                 'name' => ['required', 'string', 'max:20'],
-                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.Owner::class],
-                'password' => ['required', Rules\Password::defaults() , 'confirmed'],
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . Owner::class],
+                'password' => ['required', Rules\Password::defaults(), 'confirmed'],
                 'phone' => ['required'],
                 'address' => ['required', 'string', 'max:100'],
                 'gender' => ['required', 'string', 'max:10'],
                 'image' => ['required', 'mimes:jpeg,png,jpg,gif'],
                 'role' => ['required', 'string', 'max:10'],
-                'description' => ['required', 'string', 'max:100'],
                 'company_name' => ['required', 'string', 'max:100'],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -40,14 +39,14 @@ class RegisteredUserController extends Controller
                 'errors' => $e->errors()
             ], 422);
         }
-    
+
         // Handle image upload
         $image_path = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $image_path = $image->store('images', 'posts_upload');
         }
-    
+
         // Create the owner
         $owner = Owner::create([
             'name' => $request->name,
@@ -61,21 +60,19 @@ class RegisteredUserController extends Controller
             'company_name' => $request->company_name,
             'image' => $image_path
         ]);
-    
+
         // Fire the Registered event
         event(new Registered($owner));
-    
+
         // Create and return token
         $token = $owner->createToken('auth_token')->plainTextToken;
         Auth::guard('owner')->login($owner);
-    
+
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
             'owner' => $owner
         ], 201);
     }
-    
+
 }
-
-

@@ -27,17 +27,13 @@ Route::apiResource('/categories', CategoryController::class);
 // >Property Route< //
 Route::apiResource("property", PropertyController::class);
 Route::post('property/{id}/amenities', [PropertyController::class, 'storeAmenities'])->middleware('auth:sanctum');
-Route::put('property/{id}/updateamenities', [PropertyController::class, 'updateAmenities'])->middleware('auth:sanctum');
-
 Route::post('property/{id}/images', [PropertyController::class, 'storeImages'])->middleware('auth:sanctum');
-Route::put('property/{id}/updateimages', [PropertyController::class, 'updateImages'])->middleware('auth:sanctum');
-
-Route::get('property/{id}', [PropertyController::class, 'update'])->middleware('auth:sanctum');
-
+Route::put('property/{id}/update-amenities', [PropertyController::class, 'updateAmenities'])->middleware('auth:sanctum');
+Route::put('property/{id}/update-images', [PropertyController::class, 'updateImages'])->middleware('auth:sanctum');
 Route::post('/properties/filter', [PropertyController::class, 'filter']);
 Route::post('/properties/category', [PropertyController::class, 'filterByCategory']);
-
 // ################ //
+
 // >Route For Stripe< //
 Route::post('/payment', [StripePaymentController::class, 'createPaymentIntent']);
 Route::post('/owner/{id}/register/stripe-account', [StripePaymentController::class, 'ownerCreateAccount']);

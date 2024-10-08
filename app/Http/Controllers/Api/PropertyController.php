@@ -141,7 +141,9 @@ class PropertyController extends Controller
 
         $property->propertyAmenities()->attach($request->amenities);
 
-        return response()->json(['message' => 'Amenities updated successfully.'], 200);
+        $updatedAmenities = $property->propertyAmenities()->get();
+
+        return ApiResponse::sendResponse(200, 'Amenities updated successfully', $updatedAmenities);
     }
 
     public function getAmenities()
@@ -220,20 +222,15 @@ class PropertyController extends Controller
     public function update(Request $request, Property $property)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required | max:255',
-            'headline' => 'required | max:255',
-            'description' => 'required',
-            'sleeps' => 'required | integer | min:1',
-            'image' => 'required',
-            'location' => 'required',
+            'name' => 'required | min:5 | max:255',
+            'headline' => 'required | min:5 | max:255',
+            'description' => 'required | min:10',
+            'bedrooms' => 'required | integer | min:1',
+            'bathrooms' => 'required | integer | min:1',
+            'location' => 'required | min:5 | max:255',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
-            'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-            'amenities' => 'required|array',
-            'amenities.*' => 'string|max:255',
-            'bedrooms' => 'required|min:1',
-            'bathrooms' => 'required|min:1',
+            'sleeps' => 'required | min:1',
         ]);
 
         if ($validator->fails()) {
@@ -247,40 +244,15 @@ class PropertyController extends Controller
             'name' => $request->name,
             'headline' => $request->headline,
             'description' => $request->description,
-            'amenities' => $request->amenities,
-            'sleeps' => $request->sleeps,
+            'bedrooms' => $request->bedrooms,
+            'bathrooms' => $request->bathrooms,
             'location' => $request->location,
             'night_rate' => $request->night_rate,
             'category_id' => $request->category_id,
-            'bedrooms' => $request->bedrooms,
-            'bathrooms' => $request->bathrooms,
+            'sleeps' => $request->sleeps,
         ]);
 
-        if ($request->hasFile('images')) {
-            $property->images()->delete();
-
-            foreach ($request->file('images') as $image) {
-                $imagePath = $image->store('images/properties', 'public');
-                $imageUrl = asset('storage/' . $imagePath);
-                $property->images()->create(['image_path' => $imageUrl]);
-            }
-        }
-
-        if ($request->has('amenities')) {
-            $property->amenities()->delete();
-            foreach ($request->amenities as $amenity) {
-                $property->amenities()->create(['amenity' => $amenity]);
-            }
-        }
-
-        return response()->json(
-            [
-                'status' => 200,
-                'message' => 'Property updated successfully',
-                'data' => new PropertyResource($property->load(['images', 'amenities']))
-            ],
-            200
-        );
+        return ApiResponse::sendResponse('200', 'Property updated successfully', $property);
     }
     public function destroy(Property $property)
     {
