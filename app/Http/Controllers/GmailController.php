@@ -51,10 +51,11 @@ class GmailController extends Controller
             return redirect('http://localhost:4200/login/owner?token=' . $token . '&name=' . urlencode($owner->name) . '&email=' . urlencode($owner->email) . '&role=owner');
         } else {
             $user = User::updateOrCreate([
-                'provider_id' => $googleUser->getId(),
-            ], [
-                'name' => $googleUser->getName(),
                 'email' => $googleUser->getEmail(),
+
+            ], [
+                'provider_id' => $googleUser->getId(),
+                'name' => $googleUser->getName(),
                 'image' => $googleUser->getAvatar(),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
