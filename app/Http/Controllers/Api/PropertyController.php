@@ -20,7 +20,7 @@ class PropertyController extends Controller
 
     public function index()
     {
-        $property = Property::all()->where('status', '==', 'accepted');
+        $property = Property::where('status', '=', 'accepted')->get();
         if (count($property) > 0) {
             return PropertyResource::collection($property);
         } else {
@@ -266,19 +266,19 @@ class PropertyController extends Controller
         $query = Property::with(['category', 'owner', 'booking'])
             ->where(function ($query) use ($request) {
                 if ($request->has('name')) {
-                    $query->where('name', 'like', '%' . $request->input('name') . '%');
+                    $query->where('name', 'like', '%' . $request->input('name') . '%')->where('status', '=', 'accepted');
                 }
                 if ($request->has('location')) {
-                    $query->where('location', '=', $request->input('location'))->where('status', 'accepted');
+                    $query->where('location', '=', $request->input('location'))->where('status', '=','accepted');
                 }
                 if ($request->has('sleeps')) {
-                    $query->where('sleeps', '>=', $request->input('sleeps'))->where('status', 'accepted');
+                    $query->where('sleeps', '>=', $request->input('sleeps'))->where('status', '=','accepted');
                 }
                 if ($request->has('bedrooms')) {
-                    $query->where('bedrooms', '>=', $request->input('bedrooms'))->where('status', 'accepted');
+                    $query->where('bedrooms', '>=', $request->input('bedrooms'))->where('status', '=','accepted');
                 }
                 if ($request->has('bathrooms')) {
-                    $query->where('bathrooms', '>=', $request->input('bathrooms'))->where('status', 'accepted');
+                    $query->where('bathrooms', '>=', $request->input('bathrooms'))->where('status', '=','accepted');
                 }
             });
 
@@ -302,7 +302,7 @@ class PropertyController extends Controller
             }
 
             $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
-                $bookingQuery->where('status', 'accepted')
+                $bookingQuery->where('status', '=','accepted')
                     ->where(function ($dateQuery) use ($startDate, $endDate) {
                         $dateQuery->where('end_date', '>=', $startDate)
                             ->where('start_date', '<=', $endDate);
@@ -408,7 +408,7 @@ class PropertyController extends Controller
             'category' => 'required|exists:categories,id'
         ]);
         $categoryId = $request->input('category');
-        $properties = Property::where('category_id', '=', $categoryId)->get();
+        $properties = Property::where('category_id', '=', $categoryId)->where('status', '=', 'accepted')->get();
         return response()->json([
             'status' => 200,
             'message' => 'Data returned successfully',
