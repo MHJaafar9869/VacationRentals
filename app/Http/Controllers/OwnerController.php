@@ -5,20 +5,25 @@ namespace App\Http\Controllers;
 use App\Http\Resources\OwnerResource;
 use Illuminate\Http\Request;
 use App\Models\Owner;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+
 
 class OwnerController extends Controller
 {
+
+
+
+
     public function getOwnerDetails(Request $request)
     {
+        $owner = $request->user();
+
         $owner = $request->user();
 
         if (!$owner) {
             return response()->json(['error' => 'Owner not authenticated'], 401);
         }
 
-        $imageUrl = $owner->image ? url('images/posts/' . $owner->image) : null;  // Full URL for image
+        $imageUrl = $owner->image ? url('images/posts/' . $owner->image) : null;
 
         return response()->json([
             'name' => $owner->name,
@@ -28,10 +33,11 @@ class OwnerController extends Controller
     }
 
 
+
+
     public function ownerDetails(Request $request)
     {
         $owner = $request->user();
-
 
         $ownerWithPropertiesAndBookings = $owner->load(['properties.booking', 'properties.category']);
 
