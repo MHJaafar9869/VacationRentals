@@ -17,17 +17,16 @@ class PaymentResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-            // 'onwer_name' => $this->onwer->name,
-            'owner_id' => $this->owner_id,
             'payment_id' => $this->payment_id,
             'product_name' => $this->product_name,
             'amount' => $this->amount,
-            'currency' => $this->currency,          
+            'currency' => $this->currency,
             'payment_status' => $this->payment_status,
             'payment_method' => $this->payment_method,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
-          
+            'owner_name' => $this->payer_name,
+            'property' => new PropertyResource($this->whenLoaded('property')),
         ];
     }
 }

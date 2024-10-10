@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\AdminAuth\PasswordResetController;
+use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -43,6 +44,7 @@ Route::get('/amenities', [PropertyController::class, 'getAmenities']);
 // >Booking related< //
 Route::get('/properties/search', [PropertyController::class, 'search']);
 Route::get('/location-suggestions', [PropertyController::class, 'getSuggestions']);
+Route::post('/bookings/{id}', [BookingController::class, 'userData'])->middleware('auth:sanctum');
 // ================= //
 
 Route::get('/properties/category/{id}', [PropertyController::class, 'getpropertycategory']);
