@@ -25,7 +25,7 @@ class OwnerResource extends JsonResource
             'description' => $this->description,
             'company_name' => $this->company_name,
             'wallet' => $this->wallet,
-            'properties' => PropertyOwnerResource::collection($this->properties), 
+            'properties' => PropertyOwnerResource::collection($this->properties),
         ];
     }
 }
