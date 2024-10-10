@@ -37,15 +37,14 @@ class OwnerController extends Controller
 
     public function ownerDetails(Request $request)
     {
-        $owner = $request->user();
-    {
-        $owner = $request->user();
+        $owner = $request->user(); {
+            $owner = $request->user();
 
 
-        $ownerWithPropertiesAndBookings = $owner->load(['properties.booking']);
+            $ownerWithPropertiesAndBookings = $owner->load(['properties.booking']);
 
-        return response()->json(new OwnerResource($ownerWithPropertiesAndBookings));
-    }
+            return response()->json(new OwnerResource($ownerWithPropertiesAndBookings));
+        }
         $ownerWithPropertiesAndBookings = $owner->load(['properties.booking']);
 
         return response()->json(new OwnerResource($ownerWithPropertiesAndBookings));
@@ -106,6 +105,5 @@ class OwnerController extends Controller
         $owner->save();
 
         return response()->json(['message' => 'Owner profile updated successfully.']);
-    }
     }
 }
