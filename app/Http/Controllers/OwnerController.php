@@ -37,9 +37,7 @@ class OwnerController extends Controller
 
     public function ownerDetails(Request $request)
     {
-        $owner = $request->user(); {
-            $owner = $request->user();
-
+        $owner = $request->user();
 
         $ownerWithPropertiesAndBookings = $owner->load(['properties.booking', 'properties.category']);
 
