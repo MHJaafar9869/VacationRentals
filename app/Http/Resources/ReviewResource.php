@@ -20,7 +20,7 @@ class ReviewResource extends JsonResource
             'rating' => $this->rating,
             'review' => $this->review,
             'property_id' => $this->property_id,
-            'property_name' => $this->property ? $this->property->name : null, // Access property name
-                    ];
+            'property_name' => $this->property ? $this->property->name : null,
+        ];
     }
 }

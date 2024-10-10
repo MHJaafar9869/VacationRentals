@@ -22,12 +22,11 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'image' => $this->image,
             'address' => $this->address,
-            'gender' => $this->gender,          
-            'payments' => PaymentResource::collection($this->payments), 
-            'favorites' => FavoriteResource::collection($this->favorites), // Include FavoriteResource
+            'gender' => $this->gender,
+            'payments' => PaymentResource::collection($this->payments),
+            'favorites' => FavoriteResource::collection($this->favorites),
             'reviews' => ReviewResource::collection($this->reviews),
+            'bookings' => BookingResource::collection($this->bookings)
         ];
-            
-        
     }
 }
