@@ -9,20 +9,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class OwnerController extends Controller
-
 {
-
-   
-
-
     public function getOwnerDetails(Request $request)
     {
-        $owner = $request->user(); 
-    
+        $owner = $request->user();
+
         if (!$owner) {
             return response()->json(['error' => 'Owner not authenticated'], 401);
         }
-    
+
         $imageUrl = $owner->image ? url('images/posts/' . $owner->image) : null;  // Full URL for image
 
         return response()->json([
@@ -31,17 +26,17 @@ class OwnerController extends Controller
             'image' => $imageUrl,
         ]);
     }
-    
-    
+
+
     public function ownerDetails(Request $request)
-{
-    $owner = $request->user(); 
+    {
+        $owner = $request->user();
 
 
-    $ownerWithPropertiesAndBookings = $owner->load(['properties.booking']);
-    
-    return response()->json(new OwnerResource($ownerWithPropertiesAndBookings));
-}
+        $ownerWithPropertiesAndBookings = $owner->load(['properties.booking']);
+
+        return response()->json(new OwnerResource($ownerWithPropertiesAndBookings));
+    }
     public function show($id)
     {
         $owner = Owner::find($id);
@@ -83,10 +78,20 @@ class OwnerController extends Controller
         }
 
         if ($request->hasFile('image')) {
+            if ($owner->image) {
+                $oldImagePath = public_path('images/owner_images/' . $owner->image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images/owner_images'), $imageName);
+            $owner->image = $imageName;
         }
 
         $owner->save();
 
         return response()->json(['message' => 'Owner profile updated successfully.']);
-}
+    }
 }
