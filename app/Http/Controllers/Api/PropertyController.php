@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PropertyResource;
 use App\Models\Amenity;
 use App\Models\Category;
+use App\Models\Owner;
 use App\Models\Property;
 use App\Models\PropertyImage;
 use Carbon\Carbon;
@@ -264,23 +265,15 @@ class PropertyController extends Controller
     public function search(Request $request)
     {
         $query = Property::with(['category', 'owner', 'booking'])
-            ->where(function ($query) use ($request) {
-                if ($request->has('name')) {
-                    $query->where('name', 'like', '%' . $request->input('name') . '%')->where('status', '=', 'accepted');
-                }
-                if ($request->has('location')) {
-                    $query->where('location', '=', $request->input('location'))->where('status', '=', 'accepted');
-                }
-                if ($request->has('sleeps')) {
-                    $query->where('sleeps', '>=', $request->input('sleeps'))->where('status', '=', 'accepted');
-                }
-                if ($request->has('bedrooms')) {
-                    $query->where('bedrooms', '>=', $request->input('bedrooms'))->where('status', '=', 'accepted');
-                }
-                if ($request->has('bathrooms')) {
-                    $query->where('bathrooms', '>=', $request->input('bathrooms'))->where('status', '=', 'accepted');
-                }
-            });
+            ->where('status', '=', 'accepted');
+
+        if ($request->has('location') && $request->input('location') !== null) {
+            $query->where('location', '=', $request->input('location'));
+        }
+
+        if ($request->has('sleeps') && $request->input('sleeps') !== null) {
+            $query->where('sleeps', '>=', $request->input('sleeps'));
+        }
 
         if ($request->has('start_date') && $request->has('end_date')) {
             $startDate = Carbon::parse($request->input('start_date'));
@@ -297,15 +290,13 @@ class PropertyController extends Controller
                 return response()->json(['message' => 'The start date cannot be after the end date.'], 200);
             }
 
-            if ($endDate->lt($startDate)) {
-                return response()->json(['message' => 'The end date cannot be before the start date.'], 200);
-            }
-
             $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
                 $bookingQuery->where('status', '=', 'accepted')
                     ->where(function ($dateQuery) use ($startDate, $endDate) {
-                        $dateQuery->where('end_date', '>=', $startDate)
-                            ->where('start_date', '<=', $endDate);
+                        $dateQuery->where(function ($query) use ($startDate, $endDate) {
+                            $query->where('start_date', '<=', $endDate)
+                                ->where('end_date', '>=', $startDate);
+                        });
                     });
             });
         } else {
@@ -415,4 +406,6 @@ class PropertyController extends Controller
             'data' => PropertyResource::collection($properties)
         ], 200);
     }
+
+
 }

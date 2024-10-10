@@ -39,6 +39,7 @@ class PropertyResource extends JsonResource
             "latitude" => $this->latitude,
             'images' => PropertyImageResource::collection($this->propertyImages),
             'amenities' => AmenityResource::collection($this->propertyAmenities),
+            'bookings' => BookingResource::collection($this->booking),
         ];
     }
 }
