@@ -8,7 +8,6 @@ use App\Models\Owner;
 
 
 class OwnerController extends Controller
-
 {
 
 
@@ -16,6 +15,8 @@ class OwnerController extends Controller
 
     public function getOwnerDetails(Request $request)
     {
+        $owner = $request->user();
+
         $owner = $request->user();
 
         if (!$owner) {
@@ -32,11 +33,19 @@ class OwnerController extends Controller
     }
 
 
+
+
     public function ownerDetails(Request $request)
+    {
+        $owner = $request->user();
     {
         $owner = $request->user();
 
 
+        $ownerWithPropertiesAndBookings = $owner->load(['properties.booking']);
+
+        return response()->json(new OwnerResource($ownerWithPropertiesAndBookings));
+    }
         $ownerWithPropertiesAndBookings = $owner->load(['properties.booking']);
 
         return response()->json(new OwnerResource($ownerWithPropertiesAndBookings));
@@ -82,10 +91,21 @@ class OwnerController extends Controller
         }
 
         if ($request->hasFile('image')) {
+            if ($owner->image) {
+                $oldImagePath = public_path('images/owner_images/' . $owner->image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images/owner_images'), $imageName);
+            $owner->image = $imageName;
         }
 
         $owner->save();
 
         return response()->json(['message' => 'Owner profile updated successfully.']);
+    }
     }
 }

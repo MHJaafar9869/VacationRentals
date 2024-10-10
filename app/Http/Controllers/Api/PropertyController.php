@@ -269,16 +269,16 @@ class PropertyController extends Controller
                     $query->where('name', 'like', '%' . $request->input('name') . '%')->where('status', '=', 'accepted');
                 }
                 if ($request->has('location')) {
-                    $query->where('location', '=', $request->input('location'))->where('status', '=','accepted');
+                    $query->where('location', '=', $request->input('location'))->where('status', '=', 'accepted');
                 }
                 if ($request->has('sleeps')) {
-                    $query->where('sleeps', '>=', $request->input('sleeps'))->where('status', '=','accepted');
+                    $query->where('sleeps', '>=', $request->input('sleeps'))->where('status', '=', 'accepted');
                 }
                 if ($request->has('bedrooms')) {
-                    $query->where('bedrooms', '>=', $request->input('bedrooms'))->where('status', '=','accepted');
+                    $query->where('bedrooms', '>=', $request->input('bedrooms'))->where('status', '=', 'accepted');
                 }
                 if ($request->has('bathrooms')) {
-                    $query->where('bathrooms', '>=', $request->input('bathrooms'))->where('status', '=','accepted');
+                    $query->where('bathrooms', '>=', $request->input('bathrooms'))->where('status', '=', 'accepted');
                 }
             });
 
@@ -302,7 +302,7 @@ class PropertyController extends Controller
             }
 
             $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
-                $bookingQuery->where('status', '=','accepted')
+                $bookingQuery->where('status', '=', 'accepted')
                     ->where(function ($dateQuery) use ($startDate, $endDate) {
                         $dateQuery->where('end_date', '>=', $startDate)
                             ->where('start_date', '<=', $endDate);
