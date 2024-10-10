@@ -24,7 +24,7 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 Route::get('/user/info', [UserController::class, 'getUserInfo'])->middleware('auth:sanctum');
 Route::apiResource('/categories', CategoryController::class);
 
-// >Property Route< //
+// >Property Related< //
 Route::apiResource("property", PropertyController::class);
 Route::post('property/{id}/amenities', [PropertyController::class, 'storeAmenities'])->middleware('auth:sanctum');
 Route::post('property/{id}/images', [PropertyController::class, 'storeImages'])->middleware('auth:sanctum');
