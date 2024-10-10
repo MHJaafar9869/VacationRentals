@@ -33,7 +33,7 @@ class OwnerController extends Controller
         $owner = $request->user();
 
 
-        $ownerWithPropertiesAndBookings = $owner->load(['properties.booking']);
+        $ownerWithPropertiesAndBookings = $owner->load(['properties.booking', 'properties.category']);
 
         return response()->json(new OwnerResource($ownerWithPropertiesAndBookings));
     }
