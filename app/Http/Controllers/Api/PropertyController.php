@@ -161,7 +161,7 @@ class PropertyController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:4189',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -188,7 +188,7 @@ class PropertyController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:4189',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -291,13 +291,12 @@ class PropertyController extends Controller
             }
 
             $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
-                $bookingQuery->where('status', '=', 'accepted')
-                    ->where(function ($dateQuery) use ($startDate, $endDate) {
-                        $dateQuery->where(function ($query) use ($startDate, $endDate) {
-                            $query->where('start_date', '<=', $endDate)
-                                ->where('end_date', '>=', $startDate);
-                        });
+                $bookingQuery->where(function ($dateQuery) use ($startDate, $endDate) {
+                    $dateQuery->where(function ($query) use ($startDate, $endDate) {
+                        $query->where('start_date', '<=', $endDate)
+                            ->where('end_date', '>=', $startDate);
                     });
+                });
             });
         } else {
             return response()->json(['message' => 'Please provide both start and end dates.'], 200);
@@ -315,6 +314,8 @@ class PropertyController extends Controller
             'data' => PropertyResource::collection($properties),
         ]);
     }
+
+
 
     public function getSuggestions(Request $request)
     {
