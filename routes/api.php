@@ -29,8 +29,9 @@ Route::apiResource('/categories', CategoryController::class);
 Route::apiResource("property", PropertyController::class);
 Route::post('property/{id}/amenities', [PropertyController::class, 'storeAmenities'])->middleware('auth:sanctum');
 Route::post('property/{id}/images', [PropertyController::class, 'storeImages'])->middleware('auth:sanctum');
-Route::put('property/{id}/update-amenities', [PropertyController::class, 'updateAmenities'])->middleware('auth:sanctum');
 Route::put('property/{id}/update-images', [PropertyController::class, 'updateImages'])->middleware('auth:sanctum');
+Route::put('property/{id}/update-amenities', [PropertyController::class, 'updateAmenities'])->middleware('auth:sanctum');
+Route::get('/property-amenities/{id}', [PropertyController::class, 'getPropertyAmenities']);
 Route::post('/properties/filter', [PropertyController::class, 'filter']);
 Route::post('/properties/category', [PropertyController::class, 'filterByCategory']);
 // ################ //

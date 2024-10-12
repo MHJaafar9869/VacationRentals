@@ -4,15 +4,19 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdatePropertyImagesRequest;
 use App\Http\Resources\PropertyResource;
 use App\Models\Amenity;
 use App\Models\Category;
 use App\Models\Owner;
 use App\Models\Property;
+use App\Models\PropertyAmenity;
 use App\Models\PropertyImage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class PropertyController extends Controller
@@ -122,7 +126,7 @@ class PropertyController extends Controller
 
         return response()->json(['message' => 'Amenities added successfully.'], 200);
     }
-    public function updateAmenities(Request $request, $propertyId)
+    public function updateAmenities(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
             'amenities' => 'required|array',
@@ -136,7 +140,7 @@ class PropertyController extends Controller
             ], 422);
         }
 
-        $property = Property::findOrFail($propertyId);
+        $property = Property::findOrFail($id);
 
         $property->propertyAmenities()->detach();
 
@@ -184,35 +188,41 @@ class PropertyController extends Controller
 
         return response()->json(['message' => 'Images uploaded successfully.'], 201);
     }
-    public function updateImages(Request $request, $propertyId)
+    //TODO Function still in development - BUG: image doesn't get uploaded issue might be in the front-end.
+    public function updateImages(UpdatePropertyImagesRequest $request, $propertyId)
     {
-        $validator = Validator::make($request->all(), [
-            'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed.',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         $property = Property::findOrFail($propertyId);
+        $newImagePaths = [];
 
-        $property->propertyImages()->delete();
+        try {
+            DB::transaction(function () use ($property, $request, &$newImagePaths) {
+                $property->propertyImages()->delete();
 
-        foreach ($request->file('images') as $image) {
-            $path = $image->store('property_images', 'public');
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('property_images', 'public');
 
-            PropertyImage::create([
-                'property_id' => $property->id,
-                'image_path' => $path,
-            ]);
+                    PropertyImage::create([
+                        'property_id' => $property->id,
+                        'image_path' => $path,
+                    ]);
+
+                    $newImagePaths[] = $path;
+                }
+            });
+
+            return response()->json([
+                'message' => 'Images updated successfully.',
+                'images' => $newImagePaths
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'code' => 500,
+                'message' => 'Failed to update images',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        return response()->json(['message' => 'Images updated successfully.'], 200);
     }
+
 
     public function show($id)
     {
@@ -220,7 +230,7 @@ class PropertyController extends Controller
         return new PropertyResource($property);
     }
 
-    public function update(Request $request, Property $property)
+    public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required | min:5 | max:255',
@@ -229,7 +239,7 @@ class PropertyController extends Controller
             'bedrooms' => 'required | integer | min:1',
             'bathrooms' => 'required | integer | min:1',
             'location' => 'required | min:5 | max:255',
-            'night_rate' => 'required | integer',
+            'night_rate' => 'required | numeric',
             'category_id' => 'required',
             'sleeps' => 'required | min:1',
         ]);
@@ -238,22 +248,43 @@ class PropertyController extends Controller
             return response()->json([
                 'message' => "All fields are mandatory",
                 'error' => $validator->messages()
-            ], 200);
+            ], 401);
         }
 
-        $property->update([
-            'name' => $request->name,
-            'headline' => $request->headline,
-            'description' => $request->description,
-            'bedrooms' => $request->bedrooms,
-            'bathrooms' => $request->bathrooms,
-            'location' => $request->location,
-            'night_rate' => $request->night_rate,
-            'category_id' => $request->category_id,
-            'sleeps' => $request->sleeps,
-        ]);
+        $property = Property::find($id);
+        if (!$property) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Property not found',
+                'date' => []
+            ], 404);
+        }
 
-        return ApiResponse::sendResponse('200', 'Property updated successfully', $property);
+        $property->name = $request->name;
+        $property->headline = $request->headline;
+        $property->description = $request->description;
+        $property->bathrooms = $request->bathrooms;
+        $property->bedrooms = $request->bedrooms;
+        $property->location = $request->location;
+        $property->night_rate = $request->night_rate;
+        $property->category_id = $request->category_id;
+        $property->sleeps = $request->sleeps;
+
+        try {
+            $property->save();
+            return response()->json([
+                'code' => 200,
+                'message' => 'data updated successfully',
+                'date' => $property
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'code' => 500,
+                'message' => 'failed to update property',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
     }
     public function destroy(Property $property)
     {
@@ -314,8 +345,6 @@ class PropertyController extends Controller
             'data' => PropertyResource::collection($properties),
         ]);
     }
-
-
 
     public function getSuggestions(Request $request)
     {
@@ -407,6 +436,13 @@ class PropertyController extends Controller
             'data' => PropertyResource::collection($properties)
         ], 200);
     }
-
+    public function getPropertyAmenities($id)
+    {
+        $propertyAmenities = PropertyAmenity::where('property_id', '=', $id)->get();
+        if (!$propertyAmenities) {
+            return response()->json(['message' => 'No record found'], 404);
+        }
+        return response()->json(['data' => $propertyAmenities], 200);
+    }
 
 }
