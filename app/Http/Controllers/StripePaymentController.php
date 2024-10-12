@@ -17,13 +17,12 @@ use Stripe\Checkout\Session;
 use Stripe\PaymentIntent;
 
 class StripePaymentController extends Controller
-
 {
     public function stripe(Request $request)
     {
         try {
             $stripe = new \Stripe\StripeClient(config('stripe.stripe_sk'));
-    
+
             $response = $stripe->checkout->sessions->create([
                 'line_items' => [
                     [
@@ -45,7 +44,7 @@ class StripePaymentController extends Controller
                     'quantity' => $request->input('quantity', 1),
                     'start_date' => $request->input('start_date'),
                     'end_date' => $request->input('end_date'),
-                    'user_id'=> Auth::id(),
+                    'user_id' => Auth::id(),
                     'propertyId' => $request->input('propertyId'),
                 ],
             ]);
@@ -62,47 +61,45 @@ class StripePaymentController extends Controller
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
-    
+
 
     public function success(Request $request)
     {
-            // dd($request->input('propertyId'));
+        // dd($request->input('propertyId'));
 
         try {
             if ($request->has('session_id')) {
                 $stripe = new \Stripe\StripeClient(config('stripe.stripe_sk'));
-    
+
                 $response = $stripe->checkout->sessions->retrieve($request->input('session_id'));
-    
+
                 $payment = new \App\Models\Payment();
                 $payment->payment_id = $response->id;
-                $payment->product_name = $response->metadata->product_name;  
-                $payment->amount = $response->amount_total; 
-                $payment->quantity = $response->metadata->quantity;  
+                $payment->product_name = $response->metadata->product_name;
+                $payment->amount = $response->amount_total / 100;
+                $payment->quantity = $response->metadata->quantity;
                 $payment->currency = $response->currency;
                 $payment->payer_name = $response->customer_details->name ?? 'N/A';
                 $payment->payer_email = $response->customer_details->email ?? 'N/A';
                 $payment->payment_status = $response->payment_status;
                 $payment->payment_method = 'Stripe';
                 $payment->start_date = $response->metadata->start_date;  // Getting start_date from metadata
-                $payment->end_date = $response->metadata->end_date; 
+                $payment->end_date = $response->metadata->end_date;
                 $payment->user_id = $response->metadata->user_id;
-                $payment->save();                
+                $payment->save();
                 $property = Property::where('name', $response->metadata->product_name)->first();
                 $owner = Owner::where('id', $property->owner_id)->first();
-                $owner->wallet += $response->amount_total / 100; 
+                $owner->wallet += $response->amount_total / 100;
                 $owner->save();
                 $booking = new Booking();
                 $booking->user_id = $response->metadata->user_id;
+                $payment->property_id = $response->metadata->propertyId;
                 $booking->property_id = $response->metadata->propertyId;
                 $booking->start_date = $response->metadata->start_date;
                 $booking->end_date = $response->metadata->end_date;
                 $booking->save();
 
-                
-                  
-
-                return redirect('http://localhost:4200/success');  
+                return redirect('http://localhost:4200/success');
             } else {
                 return response()->json(['status' => 'error', 'message' => 'No session ID provided'], 400);
             }
@@ -110,9 +107,10 @@ class StripePaymentController extends Controller
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
-    
 
-    public function cancel(){
+
+    public function cancel()
+    {
 
         return response()->json(['status' => 'error', 'message' => 'Payment cancelled'], 400);
     }
