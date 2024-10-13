@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PaymentResource;
 use App\Http\Resources\PropertyResource;
 use App\Mail\PropertyAccepted;
 use App\Mail\PropertyRejected;
 use App\Mail\SendEmailNotification;
 use App\Models\Owner;
+use App\Models\Payment;
 use App\Models\Property;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -184,5 +186,11 @@ class AdminController extends Controller
         return response()->json([
             'owner' => $owner
         ]);
+    }
+    public function payments(){
+
+        $payments = Payment::all();
+
+        return PaymentResource::collection($payments);
     }
 }

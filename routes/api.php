@@ -102,6 +102,7 @@ Route::controller(AdminController::class)
         Route::get('/properties', 'index');
         Route::get('/properties/{id}', 'show');
         Route::get('/showowner/{id}', 'showowner');
+        Route::get('/payments', 'payments');
     });
 // ===================End Admin Routes====================
 Route::middleware('auth:sanctum')->group(function () {
