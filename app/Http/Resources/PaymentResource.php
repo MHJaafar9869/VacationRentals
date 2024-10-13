@@ -17,6 +17,8 @@ class PaymentResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
+            'user_name' => $this->user->name,
+
             'payment_id' => $this->payment_id,
             'product_name' => $this->product_name,
             'amount' => $this->amount,
@@ -26,6 +28,7 @@ class PaymentResource extends JsonResource
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
             'owner_name' => $this->payer_name,
+            'created_at' => $this->created_at,
             'property' => new PropertyResource($this->whenLoaded('property')),
         ];
     }
