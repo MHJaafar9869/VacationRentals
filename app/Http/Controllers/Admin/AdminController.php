@@ -34,21 +34,30 @@ class AdminController extends Controller
         ], 200);
     
     }
-    public function users(){
-        $users = User::all();
+    public function users(Request $request)
+    {
+        $limit = $request->input('limit', 10);  
+        $users = User::paginate($limit);
+    
         return ApiResponse::sendResponse(200, 'Success', $users);
     }
-    public function owners(){
-        $owners = Owner::where('role', 'owner')->get();
+    public function owners(Request $request)
+    {
+        $limit = $request->input('limit', 10);  
+        $owners = Owner::where('role', 'owner')->paginate($limit);
+    
         return ApiResponse::sendResponse(200, 'Success', $owners);
     }
+    
 
-    public function properties(){
-        $properties = Property::all();
+    public function properties(Request $request){
+        $limit = $request->input('limit', 10);
+        $properties = Property::paginate($limit);
         return PropertyResource::collection($properties);
-        
-        // ApiResponse::sendResponse(200, 'Success', $properties);
-    }
+
+        // $properties = Property::all();
+        // return PropertyResource::collection($properties);
+            }
 
 
 

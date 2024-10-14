@@ -23,15 +23,18 @@ class PropertyController extends Controller
 {
 
 
-    public function index()
+    public function index(Request $request)
     {
-        $property = Property::where('status', '=', 'accepted')->get();
-        if (count($property) > 0) {
-            return PropertyResource::collection($property);
+        $limit = $request->input('limit', 1);
+        $properties = Property::where('status', '=', 'accepted')->paginate($limit);
+        if ($properties->count() > 0) {
+            return PropertyResource::collection($properties);
         } else {
             return response()->json(['message' => 'No record found'], 200);
         }
     }
+
+    
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
