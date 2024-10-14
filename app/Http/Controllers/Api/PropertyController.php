@@ -25,7 +25,7 @@ class PropertyController extends Controller
 
     public function index(Request $request)
     {
-        $limit = $request->input('limit', 1);
+        $limit = $request->input('limit', 50);
         $properties = Property::where('status', '=', 'accepted')->paginate($limit);
         if ($properties->count() > 0) {
             return PropertyResource::collection($properties);
@@ -34,7 +34,7 @@ class PropertyController extends Controller
         }
     }
 
-    
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
