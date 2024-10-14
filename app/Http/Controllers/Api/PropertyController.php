@@ -25,7 +25,7 @@ class PropertyController extends Controller
 
     public function index(Request $request)
     {
-        $limit = $request->input('limit', 50);
+        $limit = $request->input('limit', 20);
         $page = $request->input('page', 1);
 
         $propertiesQuery = Property::where('status', '=', 'accepted');
