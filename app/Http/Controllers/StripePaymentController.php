@@ -39,7 +39,7 @@ class StripePaymentController extends Controller
                 'mode' => 'payment',
                 'success_url' => route('success') . '?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('cancel'),
-                'metadata' => [  // Add metadata to the session
+                'metadata' => [
                     'product_name' => $request->input('product_name'),
                     'quantity' => $request->input('quantity', 1),
                     'start_date' => $request->input('start_date'),
@@ -83,7 +83,8 @@ class StripePaymentController extends Controller
                 $payment->payer_email = $response->customer_details->email ?? 'N/A';
                 $payment->payment_status = $response->payment_status;
                 $payment->payment_method = 'Stripe';
-                $payment->start_date = $response->metadata->start_date;  // Getting start_date from metadata
+                $payment->property_id = $response->metadata->propertyId;
+                $payment->start_date = $response->metadata->start_date;
                 $payment->end_date = $response->metadata->end_date;
                 $payment->user_id = $response->metadata->user_id;
                 $payment->save();
@@ -93,7 +94,6 @@ class StripePaymentController extends Controller
                 $owner->save();
                 $booking = new Booking();
                 $booking->user_id = $response->metadata->user_id;
-                $payment->property_id = $response->metadata->propertyId;
                 $booking->property_id = $response->metadata->propertyId;
                 $booking->start_date = $response->metadata->start_date;
                 $booking->end_date = $response->metadata->end_date;
