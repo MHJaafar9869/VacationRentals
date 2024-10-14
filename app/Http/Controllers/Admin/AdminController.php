@@ -20,7 +20,8 @@ use Illuminate\Support\Facades\Validator;
 class AdminController extends Controller
 {
     //
-    public function getOwnerDetails($id){
+    public function getOwnerDetails($id)
+    {
         $owner = Owner::where('id', $id)->where('role', 'owner')->with(['properties'])->first();
         if (!$owner) {
             return response()->json([
@@ -28,36 +29,116 @@ class AdminController extends Controller
             ], 404);
         }
 
-        // Return the owner details with payments, favorites, and reviews relationships
         return response()->json([
             'owner' => $owner
         ], 200);
-    
+
     }
     public function users(Request $request)
     {
-        $limit = $request->input('limit', 10);  
-        $users = User::paginate($limit);
-    
-        return ApiResponse::sendResponse(200, 'Success', $users);
+        $limit = $request->input('limit', 20);
+        $page = $request->input('page', 1);
+
+        $usersQuery = User::query();
+        $users = $usersQuery->paginate($limit, ['*'], 'page', $page);
+
+        if ($users->count() > 0) {
+            return response()->json([
+                'code' => 200,
+                'message' => 'Data retrieved successfully',
+                'data' => $users->items(),
+                'meta' => [
+                    'current_page' => $users->currentPage(),
+                    'from' => $users->firstItem(),
+                    'last_page' => $users->lastPage(),
+                    'path' => $request->url(),
+                    'per_page' => $users->perPage(),
+                    'to' => $users->lastItem(),
+                    'total' => $users->total()
+                ],
+                'links' => [
+                    'first' => $users->url(1),
+                    'last' => $users->url($users->lastPage()),
+                    'prev' => $users->previousPageUrl(),
+                    'next' => $users->nextPageUrl(),
+                ]
+            ], 200);
+        } else {
+            return response()->json([
+                'code' => 200,
+                'message' => 'No record found',
+                'data' => [],
+            ], 200);
+        }
     }
+
     public function owners(Request $request)
     {
-        $limit = $request->input('limit', 10);  
-        $owners = Owner::where('role', 'owner')->paginate($limit);
-    
-        return ApiResponse::sendResponse(200, 'Success', $owners);
-    }
-    
+        $limit = $request->input('limit', 20);
+        $page = $request->input('page', 1);
 
-    public function properties(Request $request){
+        $ownersQuery = Owner::where('role', 'owner');
+
+        if ($request->has('limit') && $request->has('page')) {
+            $owners = $ownersQuery->paginate($limit, ['*'], 'page', $page);
+
+            if ($owners->count() > 0) {
+                return response()->json([
+                    'code' => 200,
+                    'message' => 'Data retrieved successfully',
+                    'data' => $owners->items(),
+                    'meta' => [
+                        'current_page' => $owners->currentPage(),
+                        'from' => $owners->firstItem(),
+                        'last_page' => $owners->lastPage(),
+                        'path' => $request->url(),
+                        'per_page' => $owners->perPage(),
+                        'to' => $owners->lastItem(),
+                        'total' => $owners->total(),
+                    ],
+                    'links' => [
+                        'first' => $owners->url(1),
+                        'last' => $owners->url($owners->lastPage()),
+                        'prev' => $owners->previousPageUrl(),
+                        'next' => $owners->nextPageUrl(),
+                    ]
+                ], 200);
+            }
+
+            return response()->json([
+                'code' => 404,
+                'message' => 'No record found',
+                'data' => [],
+            ], 200);
+        }
+
+        $owners = $ownersQuery->get();
+        if ($owners->isNotEmpty()) {
+            return response()->json([
+                'code' => 200,
+                'message' => 'Data retrieved successfully',
+                'data' => $owners,
+            ], 200);
+        }
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'No record found',
+            'data' => [],
+        ], 200);
+    }
+
+
+
+    public function properties(Request $request)
+    {
         $limit = $request->input('limit', 10);
         $properties = Property::paginate($limit);
         return PropertyResource::collection($properties);
 
         // $properties = Property::all();
         // return PropertyResource::collection($properties);
-            }
+    }
 
 
 
@@ -93,13 +174,15 @@ class AdminController extends Controller
         // Send email using Laravel's Mail facade
         Mail::to($owner->email)->send(new PropertyAccepted($owner));
     }
-    public function deleteuser($id){
+    public function deleteuser($id)
+    {
         $user = User::find($id);
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }
 
-    public function deleteowner($id){
+    public function deleteowner($id)
+    {
         $owner = Owner::find($id);
         $owner->delete();
         return response()->json(['message' => 'Owner deleted successfully']);
@@ -110,42 +193,7 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'status' => 'required|string|in:pending,accepted,rejected',
         ]);
-    
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->messages()
-            ], 422); 
-        }
-    
-        $property = Property::findOrFail($id);
-    
-        $property->status = $request->input('status');
-        $property->save();
-    
-       
-        return response()->json([
-            'success' => true,
-            'message' => 'Status updated successfully!',
-            'data' => $property
-        ], 200);
-    }
 
-    
-
-    public function sendEmail(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-           'mail_greeting' => 'required|string',
-            'mail_body' => 'required|string',
-            'mail_action_text' => 'required|string',
-            'mail_action_url' => 'required|url',
-            'mail_end_line' => 'required|string',        ]);
-        $request->validate([
-            
-        ]);
-    
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -153,8 +201,44 @@ class AdminController extends Controller
                 'errors' => $validator->messages()
             ], 422);
         }
-        $contact = Owner::findOrFail($id); 
-    
+
+        $property = Property::findOrFail($id);
+
+        $property->status = $request->input('status');
+        $property->save();
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated successfully!',
+            'data' => $property
+        ], 200);
+    }
+
+
+
+    public function sendEmail(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'mail_greeting' => 'required|string',
+            'mail_body' => 'required|string',
+            'mail_action_text' => 'required|string',
+            'mail_action_url' => 'required|url',
+            'mail_end_line' => 'required|string',
+        ]);
+        $request->validate([
+
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->messages()
+            ], 422);
+        }
+        $contact = Owner::findOrFail($id);
+
         $details = [
             'mail_greeting' => $request->mail_greeting,
             'mail_body' => $request->mail_body,
@@ -162,41 +246,76 @@ class AdminController extends Controller
             'mail_action_url' => $request->mail_action_url,
             'mail_end_line' => $request->mail_end_line,
         ];
-    
+
         Mail::to($contact->email)->send(new SendEmailNotification($details));
-    
+
         return response()->json([
             'success' => true,
             'message' => 'Email sent successfully!',
         ], 200);
     }
-    
+
+
+    // public function index(Request $request)
+    // {
+    //     $query = Property::query();
+
+    //     if ($request->has('status') && $request->status !== 'all') {
+    //         $query->where('status', $request->status);
+    //     }
+
+    //     $properties = $query->get();
+
+    //     return PropertyResource::collection($properties);
+
+    // }
 
     public function index(Request $request)
     {
+        $limit = $request->input('limit', 20);
+        $page = $request->input('page', 1);
+
         $query = Property::query();
 
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
-        $properties = $query->get(); // Assuming there's a relationship with an owner
+        $properties = $query->paginate($limit, ['*'], 'page', $page);
 
-        return PropertyResource::collection($properties);
-
+        return PropertyResource::collection($properties)->additional([
+            'meta' => [
+                'current_page' => $properties->currentPage(),
+                'from' => $properties->firstItem(),
+                'last_page' => $properties->lastPage(),
+                'path' => $request->url(),
+                'per_page' => $properties->perPage(),
+                'to' => $properties->lastItem(),
+                'total' => $properties->total(),
+            ],
+            'links' => [
+                'first' => $properties->url(1),
+                'last' => $properties->url($properties->lastPage()),
+                'prev' => $properties->previousPageUrl(),
+                'next' => $properties->nextPageUrl(),
+            ]
+        ]);
     }
 
-    public function show($id){
+    public function show($id)
+    {
         $property = Property::find($id);
         return new PropertyResource($property);
     }
-    public function showowner($id){
+    public function showowner($id)
+    {
         $owner = Owner::find($id);
         return response()->json([
             'owner' => $owner
         ]);
     }
-    public function payments(){
+    public function payments()
+    {
 
         $payments = Payment::all();
 
