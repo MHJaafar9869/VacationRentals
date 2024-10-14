@@ -26,13 +26,44 @@ class PropertyController extends Controller
     public function index(Request $request)
     {
         $limit = $request->input('limit', 50);
-        $properties = Property::where('status', '=', 'accepted')->paginate($limit);
-        if ($properties->count() > 0) {
-            return PropertyResource::collection($properties);
+        $page = $request->input('page', 1);
+
+        $propertiesQuery = Property::where('status', '=', 'accepted');
+
+        if ($request->has('limit') && $request->has('page')) {
+            $properties = $propertiesQuery->paginate($limit, ['*'], 'page', $page);
+
+            if ($properties->count() > 0) {
+                return PropertyResource::collection($properties)->additional([
+                    'meta' => [
+                        'current_page' => $properties->currentPage(),
+                        'from' => $properties->firstItem(),
+                        'last_page' => $properties->lastPage(),
+                        'path' => $request->url(),
+                        'per_page' => $properties->perPage(),
+                        'to' => $properties->lastItem(),
+                        'total' => $properties->total()
+                    ],
+                    'links' => [
+                        'first' => $properties->url(1),
+                        'last' => $properties->url($properties->lastPage()),
+                        'prev' => $properties->previousPageUrl(),
+                        'next' => $properties->nextPageUrl(),
+                    ]
+                ]);
+            }
         } else {
-            return response()->json(['message' => 'No record found'], 200);
+            $properties = $propertiesQuery->get();
+
+            if ($properties->isNotEmpty()) {
+                return PropertyResource::collection($properties);
+            }
         }
+
+        return response()->json(['message' => 'No record found'], 200);
     }
+
+
 
 
     public function store(Request $request)
