@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Owner;
+use App\Models\Payment;
 use App\Models\Property;
+use App\Models\Room;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -29,11 +31,11 @@ class StripePaymentController extends Controller
                         'price_data' => [
                             'currency' => 'usd',
                             'product_data' => [
-                                'name' => $request->input('product_name'),  // Pass product name
+                                'name' => $request->input('product_name'),
                             ],
-                            'unit_amount' => $request->input('price') * 100,  // Stripe expects amounts in cents
+                            'unit_amount' => $request->input('price') * 100,
                         ],
-                        'quantity' => $request->input('quantity', 1), // Default quantity to 1 if not provided
+                        'quantity' => $request->input('quantity', 1),
                     ],
                 ],
                 'mode' => 'payment',
@@ -61,8 +63,6 @@ class StripePaymentController extends Controller
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
-
-
     public function success(Request $request)
     {
         // dd($request->input('propertyId'));
@@ -73,7 +73,7 @@ class StripePaymentController extends Controller
 
                 $response = $stripe->checkout->sessions->retrieve($request->input('session_id'));
 
-                $payment = new \App\Models\Payment();
+                $payment = new Payment();
                 $payment->payment_id = $response->id;
                 $payment->product_name = $response->metadata->product_name;
                 $payment->amount = $response->amount_total / 100;
@@ -88,16 +88,26 @@ class StripePaymentController extends Controller
                 $payment->end_date = $response->metadata->end_date;
                 $payment->user_id = $response->metadata->user_id;
                 $payment->save();
+
                 $property = Property::where('name', $response->metadata->product_name)->first();
                 $owner = Owner::where('id', $property->owner_id)->first();
                 $owner->wallet += $response->amount_total / 100;
                 $owner->save();
+
                 $booking = new Booking();
                 $booking->user_id = $response->metadata->user_id;
                 $booking->property_id = $response->metadata->propertyId;
                 $booking->start_date = $response->metadata->start_date;
                 $booking->end_date = $response->metadata->end_date;
                 $booking->save();
+
+                $room = new Room();
+                $room->guest_id = $response->metadata->user_id;
+                $room->host_id = $property->owner_id;
+                $room->property_id = $property->id;
+                $room->booking_id = $booking->id;
+                $room->channel_name = "private-chat.{$response->metadata->user_id}.{$property->id}.{$booking->id}";
+                $room->save();
 
                 return redirect('http://localhost:4200/success');
             } else {
@@ -107,11 +117,8 @@ class StripePaymentController extends Controller
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
-
-
     public function cancel()
     {
-
         return response()->json(['status' => 'error', 'message' => 'Payment cancelled'], 400);
     }
 
