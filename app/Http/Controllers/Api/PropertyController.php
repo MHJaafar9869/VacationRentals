@@ -21,8 +21,6 @@ use Illuminate\Support\Facades\Validator;
 
 class PropertyController extends Controller
 {
-
-
     public function index(Request $request)
     {
         $limit = $request->input('limit', 20);
@@ -59,12 +57,8 @@ class PropertyController extends Controller
                 return PropertyResource::collection($properties);
             }
         }
-
         return response()->json(['message' => 'No record found'], 200);
     }
-
-
-
 
     public function store(Request $request)
     {

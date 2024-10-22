@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\AdminAuth\PasswordResetController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -16,7 +17,9 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\StripePaymentController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
+use Pusher\Pusher;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -45,7 +48,16 @@ Route::get('/amenities', [PropertyController::class, 'getAmenities']);
 // >Booking related< //
 Route::get('/properties/search', [PropertyController::class, 'search']);
 Route::get('/location-suggestions', [PropertyController::class, 'getSuggestions']);
-Route::post('/bookings/{id}', [BookingController::class, 'userData'])->middleware('auth:sanctum');
+
+Route::post('/booking/message', [MessageController::class, 'message'])->middleware('auth:sanctum');
+Route::get('rooms/{propertyId}/{userId}/{bookingId}', [MessageController::class, 'getRoomDetails'])->middleware('auth:sanctum');
+
+
+Route::post('/pusher/auth', function (Request $request) {
+    return Broadcast::auth($request);
+})->middleware('auth:sanctum');
+
+Route::get('/booking/owner-details/{id}', [BookingController::class, 'getOwnerInfo']);
 // ================= //
 
 Route::get('/properties/category/{id}', [PropertyController::class, 'getpropertycategory']);
@@ -110,6 +122,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/favorites/{property_id}', [FavoriteController::class, 'removeFromFavorites']);
     Route::get('/favorites', [FavoriteController::class, 'getUserFavorites']);
     Route::post('/favorites/toggle', [FavoriteController::class, 'toggleFavorite']);
+    Route::get('bookings/{id}', [BookingController::class, 'userData']);
 });
 
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)->name('verification.verify')->middleware('auth:sanctum');
@@ -135,3 +148,22 @@ Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUser
 
 Route::get('/admin/owner/{id}', [AdminController::class, 'getOwnerDetails']);
 Route::delete('/properties/{id}', [PropertyController::class, 'delete']);
+
+Route::get('/test-pusher', function () {
+    $options = [
+        'cluster' => env('PUSHER_APP_CLUSTER'),
+        'useTLS' => true,
+    ];
+
+    $pusher = new Pusher(
+        env('PUSHER_APP_KEY'),
+        env('PUSHER_APP_SECRET'),
+        env('PUSHER_APP_ID'),
+        $options
+    );
+
+    $data['message'] = 'Test message';
+    $pusher->trigger('test-channel', 'test-event', $data);
+
+    return 'Message sent!';
+})->middleware('auth:sanctum');
