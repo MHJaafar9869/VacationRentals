@@ -19,7 +19,7 @@ class TestimonialController extends Controller
             'name' => 'required',
             'subject' => 'required',
             'message' => 'required',
-            'email' => 'required | email',
+            'email' => 'required|email',
         ]);
 
         if ($validator->fails()) {
@@ -44,8 +44,14 @@ class TestimonialController extends Controller
     public function getTestimonials(){
 
         $testimonials = Testimonial::with('user')->get();
+        // dd($testimonials);
         return ApiResponse::sendResponse(200, 'Testimonial fetched successfully', TestimonialResource::collection($testimonials));
       
+    }
+
+    public function getTestimonialForUser(){
+        $testimonials = Testimonial::where('subject' ,'Feedback')->with('user')->get();
+        return ApiResponse::sendResponse(200, 'Testimonial fetched successfully', TestimonialResource::collection($testimonials));
     }
 
     public function destroy($id){

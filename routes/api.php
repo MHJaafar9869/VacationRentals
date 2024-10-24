@@ -172,7 +172,8 @@ Route::get('/test-pusher', function () {
 
 Route::controller(TestimonialController::class)->group(function () {
    Route::post('/testimonial', 'store')->name('testimonial.store')->middleware('auth:sanctum'); 
-   Route::get('/testimonials', 'getTestimonials');
-   Route::delete('/testimonials/{id}', 'destroy');
+   Route::get('/testimonials', 'getTestimonials')->middleware('auth:sanctum');
+   Route::delete('/testimonials/{id}', 'destroy')->middleware('auth:sanctum');
+   Route::get('user/testimonials', 'getTestimonialForUser')->name('testimonial.user');
 
 });
