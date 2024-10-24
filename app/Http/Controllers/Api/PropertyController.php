@@ -439,18 +439,47 @@ class PropertyController extends Controller
         return response()->json(['message' => 'Property deleted successfully']);
     }
 
+    // public function filter(Request $request)
+    // {
+    //     $request->validate([
+    //         'amenity' => 'required|array',
+    //         'amenity.*' => 'integer|exists:amenities,id',
+    //     ]);
+    //     $amenityIds = $request->input('amenity');
+    //     $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
+    //         $query->whereIn('id', $amenityIds);
+    //     })->where('status', '=', 'accepted')->get();
+    //     return response()->json([
+    //         'status' => 200,
+    //         'message' => 'Data returned successfully',
+    //         'data' => PropertyResource::collection($properties)
+    //     ], 200);
+    // }
     public function filter(Request $request)
-    {
-        $request->validate([
-            'amenity' => 'required|array',
-            'amenity.*' => 'integer|exists:amenities,id',
-        ]);
-        $amenityIds = $request->input('amenity');
-        $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
-            $query->whereIn('id', $amenityIds);
-        })->get();
-        return response()->json(['data' => $properties], 200);
-    }
+{
+    $request->validate([
+        'amenity' => 'required|array',
+        'amenity.*' => 'integer|exists:amenities,id',
+    ]);
+
+    $amenityIds = $request->input('amenity');
+    $numAmenities = count($amenityIds);  // Number of selected amenities
+
+    $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
+        // Ensuring that all selected amenities are present
+        $query->whereIn('id', $amenityIds);
+    }, '=', $numAmenities) // Make sure the count matches the selected number of amenities
+    ->where('status', '=', 'accepted')
+    ->get();
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Data returned successfully',
+        'data' => PropertyResource::collection($properties)
+    ], 200);
+}
+
+
     public function filterByCategory(Request $request)
     {
         $request->validate([
