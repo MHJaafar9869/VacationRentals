@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email');
             $table->string('message');
-            $table->enum('subject', ['Questions', 'Feedback'])->default('Questions');
+            $table->enum('subject', ['Questions', 'Feedback']);
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
             $table->unsignedBigInteger('owner_id')->nullable();
