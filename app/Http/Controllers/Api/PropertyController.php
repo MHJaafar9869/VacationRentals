@@ -16,7 +16,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class PropertyController extends Controller
@@ -312,7 +311,6 @@ class PropertyController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-
     }
     public function destroy(Property $property)
     {
@@ -327,7 +325,8 @@ class PropertyController extends Controller
             ->where('status', '=', 'accepted');
 
         if ($request->has('location') && $request->input('location') !== null) {
-            $query->where('location', '=', $request->input('location'));
+            $location = $request->input('location');
+            $query->where('location', 'LIKE', '%' . $location . '%');
         }
 
         if ($request->has('sleeps') && $request->input('sleeps') !== null) {
@@ -501,5 +500,4 @@ class PropertyController extends Controller
         }
         return response()->json(['data' => $propertyAmenities], 200);
     }
-
 }
