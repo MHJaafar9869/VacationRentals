@@ -26,6 +26,7 @@ class CategoryController extends Controller
     {
         $validator =Validator::make($request->all(),[
             'name' => 'required',
+            'description'=>'required'
         ]);
 
         if ($validator->fails()) {
@@ -65,6 +66,7 @@ class CategoryController extends Controller
         $validator =Validator::make($request->all(),
         [
             'name' => 'required',
+            'description'=>'required'
         ]);
 
 
