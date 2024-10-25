@@ -331,7 +331,8 @@ class PropertyController extends Controller
             ->where('status', '=', 'accepted');
 
         if ($request->has('location') && $request->input('location') !== null) {
-            $query->where('location', '=', $request->input('location'));
+            $location = $request->input('location');
+            $query->where('location', 'LIKE', '%' . $location . '%');
         }
 
         if ($request->has('sleeps') && $request->input('sleeps') !== null) {
@@ -455,24 +456,46 @@ class PropertyController extends Controller
         return response()->json(['message' => 'Property deleted successfully']);
     }
 
+    // public function filter(Request $request)
+    // {
+    //     $request->validate([
+    //         'amenity' => 'required|array',
+    //         'amenity.*' => 'integer|exists:amenities,id',
+    //     ]);
+    //     $amenityIds = $request->input('amenity');
+    //     $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
+    //         $query->whereIn('id', $amenityIds);
+    //     })->where('status', '=', 'accepted')->get();
+    //     return response()->json([
+    //         'status' => 200,
+    //         'message' => 'Data returned successfully',
+    //         'data' => PropertyResource::collection($properties)
+    //     ], 200);
+    // }
     public function filter(Request $request)
     {
         $request->validate([
             'amenity' => 'required|array',
             'amenity.*' => 'integer|exists:amenities,id',
         ]);
-        $amenityIds = $request->input('amenity');
 
-        $properties = Property::where('status', '=', 'accepted')
-            ->whereHas('propertyAmenities', function ($query) use ($amenityIds) {
-                $query->whereIn('id', $amenityIds);
-            })->get();
+        $amenityIds = $request->input('amenity');
+        $numAmenities = count($amenityIds);  // Number of selected amenities
+
+        $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
+            // Ensuring that all selected amenities are present
+            $query->whereIn('id', $amenityIds);
+        }, '=', $numAmenities) // Make sure the count matches the selected number of amenities
+            ->where('status', '=', 'accepted')
+            ->get();
+
         return response()->json([
             'status' => 200,
-            'message' => 'data retrieved successfully',
-            'data' => $properties
+            'message' => 'Data returned successfully',
+            'data' => PropertyResource::collection($properties)
         ], 200);
     }
+
 
     public function filterByCategory(Request $request)
     {

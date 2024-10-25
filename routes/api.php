@@ -17,6 +17,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\StripePaymentController;
+use App\Http\Controllers\TestimonialController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use Pusher\Pusher;
@@ -168,3 +169,12 @@ Route::get('/test-pusher', function () {
 
     return 'Message sent!';
 })->middleware('auth:sanctum');
+
+
+Route::controller(TestimonialController::class)->group(function () {
+   Route::post('/testimonial', 'store')->name('testimonial.store')->middleware('auth:sanctum'); 
+   Route::get('/testimonials', 'getTestimonials')->middleware('auth:sanctum');
+   Route::delete('/testimonials/{id}', 'destroy')->middleware('auth:sanctum');
+   Route::get('user/testimonials', 'getTestimonialForUser')->name('testimonial.user');
+
+});
