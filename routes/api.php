@@ -52,13 +52,12 @@ Route::get('/location-suggestions', [PropertyController::class, 'getSuggestions'
 
 Route::post('/booking/message', [MessageController::class, 'message'])->middleware('auth:sanctum');
 Route::get('rooms/{propertyId}/{userId}/{bookingId}', [MessageController::class, 'getRoomDetails'])->middleware('auth:sanctum');
-
-
+Route::get('/property/{id}/bookings', [PropertyController::class, 'getBookingsByProperty'])->middleware('auth:sanctum');
 Route::post('/pusher/auth', function (Request $request) {
     return Broadcast::auth($request);
 })->middleware('auth:sanctum');
-
 Route::get('/booking/owner-details/{id}', [BookingController::class, 'getOwnerInfo']);
+Route::delete('/property/{propertyId}/block/{id}', [PropertyController::class, 'removeBlock'])->middleware('auth:sanctum');
 // ================= //
 
 Route::get('/properties/category/{id}', [PropertyController::class, 'getpropertycategory']);
@@ -86,6 +85,8 @@ Route::post('/login/owner', [App\Http\Controllers\AdminAuth\AuthenticatedSession
 Route::post('/logout/owner', [App\Http\Controllers\AdminAuth\AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');
 Route::post('owners/password/email', [PasswordResetController::class, 'sendResetLinkEmail']);
 Route::post('owners/password/reset', [PasswordResetController::class, 'reset']);
+Route::post('/property/{id}/add-block', [PropertyController::class, 'addBlock'])->middleware('auth:sanctum');
+Route::get('/property/{id}/get-blocks', [PropertyController::class, 'getBlocksPerProperty'])->middleware('auth:sanctum');
 
 // ===================End Owner Routes====================
 

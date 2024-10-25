@@ -5,10 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdatePropertyImagesRequest;
+use App\Http\Resources\BlockResource;
+use App\Http\Resources\BookingDatesResource;
+use App\Http\Resources\BookingResource;
 use App\Http\Resources\PropertyResource;
 use App\Models\Amenity;
+use App\Models\Block;
+use App\Models\Booking;
 use App\Models\Category;
 use App\Models\Owner;
+use App\Models\User;
 use App\Models\Property;
 use App\Models\PropertyAmenity;
 use App\Models\PropertyImage;
@@ -348,8 +354,19 @@ class PropertyController extends Controller
                 return response()->json(['message' => 'The start date cannot be after the end date.'], 200);
             }
 
+            // Gets the properties where dates are not booked
             $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
                 $bookingQuery->where(function ($dateQuery) use ($startDate, $endDate) {
+                    $dateQuery->where(function ($query) use ($startDate, $endDate) {
+                        $query->where('start_date', '<=', $endDate)
+                            ->where('end_date', '>=', $startDate);
+                    });
+                });
+            });
+
+            // Gets the properties where dates are not blocked
+            $query->whereDoesntHave('blocks', function ($blockQuery) use ($startDate, $endDate) {
+                $blockQuery->where(function ($dateQuery) use ($startDate, $endDate) {
                     $dateQuery->where(function ($query) use ($startDate, $endDate) {
                         $query->where('start_date', '<=', $endDate)
                             ->where('end_date', '>=', $startDate);
@@ -372,6 +389,7 @@ class PropertyController extends Controller
             'data' => PropertyResource::collection($properties),
         ]);
     }
+
 
     public function getSuggestions(Request $request)
     {
@@ -455,28 +473,28 @@ class PropertyController extends Controller
     //     ], 200);
     // }
     public function filter(Request $request)
-{
-    $request->validate([
-        'amenity' => 'required|array',
-        'amenity.*' => 'integer|exists:amenities,id',
-    ]);
+    {
+        $request->validate([
+            'amenity' => 'required|array',
+            'amenity.*' => 'integer|exists:amenities,id',
+        ]);
 
-    $amenityIds = $request->input('amenity');
-    $numAmenities = count($amenityIds);  // Number of selected amenities
+        $amenityIds = $request->input('amenity');
+        $numAmenities = count($amenityIds);  // Number of selected amenities
 
-    $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
-        // Ensuring that all selected amenities are present
-        $query->whereIn('id', $amenityIds);
-    }, '=', $numAmenities) // Make sure the count matches the selected number of amenities
-    ->where('status', '=', 'accepted')
-    ->get();
+        $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
+            // Ensuring that all selected amenities are present
+            $query->whereIn('id', $amenityIds);
+        }, '=', $numAmenities) // Make sure the count matches the selected number of amenities
+            ->where('status', '=', 'accepted')
+            ->get();
 
-    return response()->json([
-        'status' => 200,
-        'message' => 'Data returned successfully',
-        'data' => PropertyResource::collection($properties)
-    ], 200);
-}
+        return response()->json([
+            'status' => 200,
+            'message' => 'Data returned successfully',
+            'data' => PropertyResource::collection($properties)
+        ], 200);
+    }
 
 
     public function filterByCategory(Request $request)
@@ -492,6 +510,7 @@ class PropertyController extends Controller
             'data' => PropertyResource::collection($properties)
         ], 200);
     }
+
     public function getPropertyAmenities($id)
     {
         $propertyAmenities = PropertyAmenity::where('property_id', '=', $id)->get();
@@ -499,5 +518,185 @@ class PropertyController extends Controller
             return response()->json(['message' => 'No record found'], 404);
         }
         return response()->json(['data' => $propertyAmenities], 200);
+    }
+
+    public function addBlock(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user instanceof User) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'Unauthorized: Guests are not allowed to access this data',
+            ], 403);
+        }
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'required|date|after:today',
+            'end_date' => 'required|date|after:start_date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        $property = Property::find($id);
+
+        if (!$property) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Property not found',
+                'data' => [],
+            ]);
+        }
+
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+
+        // Check if the property is already blocked during the selected dates
+        $existingBlock = Block::where('property_id', '=', $id)
+            ->where(function ($query) use ($start_date, $end_date) {
+                $query->whereBetween('start_date', [$start_date, $end_date])
+                    ->orWhereBetween('end_date', [$start_date, $end_date])
+                    ->orWhere(function ($query) use ($start_date, $end_date) {
+                        $query->where('start_date', '<=', $start_date)
+                            ->where('end_date', '>=', $end_date);
+                    });
+            })
+            ->first();
+
+        if ($existingBlock) {
+            return response()->json([
+                'status' => 409,
+                'message' => 'Property is already blocked for the selected dates',
+                'data' => $existingBlock,
+            ], 409);
+        }
+
+        $block = Block::create([
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+            'property_id' => $id,
+        ]);
+
+        return ApiResponse::sendResponse(200, 'Block has been added successfully', $block);
+    }
+
+    public function getBlocksPerProperty($id, Request $request)
+    {
+        $user = $request->user();
+
+        if ($user instanceof User) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'Unauthorized: Guests are not allowed to access this data',
+            ], 403);
+        }
+
+        $property = Property::find($id);
+
+        if (!$property) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Property not found',
+                'data' => [],
+            ], 404);
+        }
+
+        $property_blocks = Block::where('property_id', '=', $id)->get();
+
+        if ($property_blocks->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'No blocks found for this property',
+                'data' => [],
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Data retrieved successfully',
+            'data' => BlockResource::collection($property_blocks),
+        ], 200);
+    }
+
+    public function getBookingsByProperty($id, Request $request)
+    {
+        $bookings = Booking::where('property_id', '=', $id)->get();
+        $property = Property::find($id);
+
+        if (!$property) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Property not found',
+                'data' => [],
+            ], 404);
+        }
+
+        $user = $request->user();
+
+        if ($user instanceof User) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'Unauthorized: Guests are not allowed to access this data',
+            ], 403);
+        }
+
+        if ($bookings->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'No bookings found for this property',
+                'data' => [],
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Data retrieved successfully',
+            'data' => BookingDatesResource::collection($bookings)
+        ], 200);
+    }
+
+    public function removeBlock($id, $propertyId, Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user || $user instanceof User) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'Unauthorized: Guests are not allowed to access this data',
+            ], 403);
+        }
+
+        $property = Property::find($propertyId);
+
+        if ($property->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Property not found',
+                'data' => []
+            ], 404);
+        }
+
+        $block = Block::find($id);
+
+        if ($block->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Block not found',
+                'data' => []
+            ], 404);
+        }
+
+        $start_date = $block->start_date;
+        $end_date = $block->end_date;
+
+        $block->delete();
+        return response()->json([
+            'status' => 200,
+            'date' => [`$start_date - $end_date Block has been removed successfully`, 'id' => $id]
+        ], 200);
     }
 }
