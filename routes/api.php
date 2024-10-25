@@ -57,7 +57,7 @@ Route::post('/pusher/auth', function (Request $request) {
     return Broadcast::auth($request);
 })->middleware('auth:sanctum');
 Route::get('/booking/owner-details/{id}', [BookingController::class, 'getOwnerInfo']);
-Route::delete('/property/{propertyId}/block/{id}', [PropertyController::class, 'removeBlock'])->middleware('auth:sanctum');
+Route::delete('/property/{propertyId}/block/{blockId}', [PropertyController::class, 'removeBlock'])->middleware('auth:sanctum');
 // ================= //
 
 Route::get('/properties/category/{id}', [PropertyController::class, 'getpropertycategory']);
@@ -172,9 +172,8 @@ Route::get('/test-pusher', function () {
 
 
 Route::controller(TestimonialController::class)->group(function () {
-   Route::post('/testimonial', 'store')->name('testimonial.store')->middleware('auth:sanctum'); 
-   Route::get('/testimonials', 'getTestimonials')->middleware('auth:sanctum');
-   Route::delete('/testimonials/{id}', 'destroy')->middleware('auth:sanctum');
-   Route::get('user/testimonials', 'getTestimonialForUser')->name('testimonial.user');
-
+    Route::post('/testimonial', 'store')->name('testimonial.store')->middleware('auth:sanctum');
+    Route::get('/testimonials', 'getTestimonials')->middleware('auth:sanctum');
+    Route::delete('/testimonials/{id}', 'destroy')->middleware('auth:sanctum');
+    Route::get('user/testimonials', 'getTestimonialForUser')->name('testimonial.user');
 });
