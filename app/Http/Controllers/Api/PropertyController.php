@@ -659,7 +659,7 @@ class PropertyController extends Controller
         ], 200);
     }
 
-    public function removeBlock($id, $propertyId, Request $request)
+    public function removeBlock($propertyId, $blockId, Request $request)
     {
         $user = $request->user();
 
@@ -671,8 +671,9 @@ class PropertyController extends Controller
         }
 
         $property = Property::find($propertyId);
+        // dd($propertyId);
 
-        if ($property->isEmpty()) {
+        if (!$property) {
             return response()->json([
                 'status' => 404,
                 'message' => 'Property not found',
@@ -680,9 +681,9 @@ class PropertyController extends Controller
             ], 404);
         }
 
-        $block = Block::find($id);
+        $block = Block::find($blockId);
 
-        if ($block->isEmpty()) {
+        if (!$block) {
             return response()->json([
                 'status' => 404,
                 'message' => 'Block not found',
@@ -696,7 +697,8 @@ class PropertyController extends Controller
         $block->delete();
         return response()->json([
             'status' => 200,
-            'date' => [`$start_date - $end_date Block has been removed successfully`, 'id' => $id]
+            'message' => "$start_date - $end_date Block has been removed successfully",
+            'id' => $blockId
         ], 200);
     }
 }
