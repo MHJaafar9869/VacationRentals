@@ -26,6 +26,13 @@ use Illuminate\Support\Facades\Validator;
 
 class PropertyController extends Controller
 {
+
+
+    public function getFirstThree(){
+
+        $properties = Property::where('status', '=', 'accepted')->take(3)->get();
+        return ApiResponse::sendResponse(200 , 'Properties fetched successfully',PropertyResource::collection($properties));     
+    }
     public function index(Request $request)
     {
         $limit = $request->input('limit', 20);
