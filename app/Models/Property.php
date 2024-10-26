@@ -35,6 +35,11 @@ class Property extends Model
         return $this->belongsTo(Owner::class, "owner_id", "id");
     }
 
+    public function blocks()
+    {
+        return $this->hasMany(Block::class);
+    }
+
     public function booking()
     {
         return $this->hasMany(Booking::class);
