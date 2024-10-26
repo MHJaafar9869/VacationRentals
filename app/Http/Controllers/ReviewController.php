@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +32,21 @@ class ReviewController extends Controller
     }
 
 
+    public function checkBooking($propertyId)
+    {
+        // Check if the authenticated user has booked the property
+        $hasBooked = Booking::where('user_id', Auth::id())
+            ->where('property_id', $propertyId)
+            ->exists();
+
+        if ($hasBooked) {
+            // dd('ss');
+            return response()->json(['canReview' => true, 'message' => 'User has booked this property'], 200);
+        } else {
+            // dd('aa');
+            return response()->json(['canReview' => false, 'message' => 'User has not booked this property'], 403);
+        }
+    }
 
 
     // Get reviews for a property

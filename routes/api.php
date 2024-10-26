@@ -140,6 +140,7 @@ Route::controller(StripePaymentController::class)->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reviews', [ReviewController::class, 'addReview']);
+    Route::get('/check-booking/{propertyId}' , [ReviewController::class, 'checkBooking'])->middleware('auth:sanctum');
 });
 
 Route::get('/properties/{id}/reviews', [ReviewController::class, 'getPropertyReviews']);
