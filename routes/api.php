@@ -178,3 +178,6 @@ Route::controller(TestimonialController::class)->group(function () {
     Route::delete('/testimonials/{id}', 'destroy')->middleware('auth:sanctum');
     Route::get('user/testimonials', 'getTestimonialForUser')->name('testimonial.user');
 });
+
+
+Route::get('first/three' , [PropertyController::class, 'getFirstThree'])->name('first.three');
