@@ -38,7 +38,7 @@ class PropertyController extends Controller
         $limit = $request->input('limit', 20);
         $page = $request->input('page', 1);
 
-        $propertiesQuery = Property::where('status', '=', 'accepted');
+        $propertiesQuery = Property::where('status', '=', 'accepted')->where('show' , '=' , 'available');
 
         if ($request->has('limit') && $request->has('page')) {
             $properties = $propertiesQuery->paginate($limit, ['*'], 'page', $page);
@@ -708,4 +708,40 @@ class PropertyController extends Controller
             'id' => $blockId
         ], 200);
     }
+
+
+    public function updateShowProperty($id, Request $request){
+        $validator = Validator::make($request->all(), [
+            'show' => 'required|in:available,unavailable'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation failed',
+                'errors' => $validator->messages()
+            ], 422);
+        }
+    
+        $validatedData = $validator->validated();
+    
+        $property = Property::find($id);
+        if (!$property){
+            return response()->json([
+                'status' => 404,
+                'message' => 'Property not found',
+                'data' => [],
+            ], 404);
+        }
+    
+        $property->show = $validatedData['show'];
+        $property->save();
+    
+        return response()->json([
+            'status' => 200,
+            'message' => 'Property updated successfully',
+            'data' => $property->show,
+        ]);
+    }
+    
 }
