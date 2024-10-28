@@ -14,6 +14,10 @@ class PropertyResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $originalPrice = $this->night_rate;    
+        $offerPrice = $this->offer > 0 
+            ? $originalPrice - ($originalPrice * ($this->offer / 100)) 
+            : $originalPrice;
         return [
             "id" => $this->id,
             "name" => $this->name,
@@ -22,7 +26,9 @@ class PropertyResource extends JsonResource
             "bedrooms" => $this->bedrooms,
             "bathrooms" => $this->bathrooms,
             "location" => $this->location,
-            "night_rate" => $this->night_rate,
+            "night_rate" => $originalPrice,
+            "total_price" => $offerPrice,       
+            "offer" => $this->offer,
             "sleeps" => $this->sleeps,
             "status" => $this->status,
             "createdAt" => $this->created_at,

@@ -22,7 +22,8 @@ class Property extends Model
         "category_id",
         'latitude',
         'longitude',
-        'owner_id'
+        'owner_id',
+        'offer'
     ];
 
     public function category()
