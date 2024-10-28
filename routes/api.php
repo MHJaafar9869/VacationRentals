@@ -38,6 +38,9 @@ Route::put('property/{id}/update-amenities', [PropertyController::class, 'update
 Route::get('/property-amenities/{id}', [PropertyController::class, 'getPropertyAmenities']);
 Route::post('/properties/filter', [PropertyController::class, 'filter']);
 Route::post('/properties/category', [PropertyController::class, 'filterByCategory']);
+Route::put('/properties/{property}/offer', [PropertyController::class, 'updateOffer'])->middleware('auth:sanctum');
+
+
 // ################ //
 
 // >Route For Stripe< //

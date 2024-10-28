@@ -744,4 +744,17 @@ class PropertyController extends Controller
         ]);
     }
     
+
+    public function updateOffer(Request $request, Property $property)
+    {
+        $data = $request->validate([
+            'offer' => 'required|numeric|min:0|max:100'
+        ]);
+        $property->offer = $data['offer'];
+        $property->save();
+        return response()->json([
+            'message' => 'Offer updated successfully',
+            'property' => new PropertyResource($property)
+        ], 200);
+    }
 }
