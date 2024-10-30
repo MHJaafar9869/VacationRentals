@@ -765,14 +765,31 @@ class PropertyController extends Controller
 
     public function updateOffer(Request $request, Property $property)
     {
-        $data = $request->validate([
-            'offer' => 'required|numeric|min:0|max:100'
+        $validator = Validator::make($request->all(), [
+            'offer' => 'required|numeric|min:0|max:100',
+            'offer_start_date' => 'nullable|date',
+            'offer_end_date' => 'nullable|date|after_or_equal:offer_start_date',
         ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+    
+        // If validation passes, update the property
+        $data = $validator->validated();
+    
         $property->offer = $data['offer'];
+        $property->offer_start_date = $data['offer_start_date'] ?? null;
+        $property->offer_end_date = $data['offer_end_date'] ?? null;
+    
         $property->save();
+    
         return response()->json([
             'message' => 'Offer updated successfully',
-            'property' => new PropertyResource($property)
+            'property' => new PropertyResource($property),
         ], 200);
     }
+      
 }

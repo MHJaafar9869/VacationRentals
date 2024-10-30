@@ -15,7 +15,19 @@ class PropertyResource extends JsonResource
     public function toArray(Request $request): array
     {
         $originalPrice = $this->night_rate;    
-        $offerPrice = $this->offer > 0 
+
+        // الحصول على التاريخ الحالي
+        $today = now(); // يمكنك استخدام now() للحصول على التاريخ والوقت الحالي
+        
+        // تحويل تواريخ البدء والانتهاء إلى كائنات Carbon
+        $offerStartDate = \Carbon\Carbon::parse($this->offer_start_date);
+        $offerEndDate = \Carbon\Carbon::parse($this->offer_end_date);
+        
+        // تحقق مما إذا كان العرض ساريًا
+        $isOfferActive = $today->between($offerStartDate, $offerEndDate);
+
+        // حساب سعر العرض
+        $offerPrice = $isOfferActive && $this->offer > 0 
             ? $originalPrice - ($originalPrice * ($this->offer / 100)) 
             : $originalPrice;
         return [
@@ -29,6 +41,8 @@ class PropertyResource extends JsonResource
             "night_rate" => $originalPrice,
             "total_price" => $offerPrice,       
             "offer" => $this->offer,
+            "offer_start_date" => $this->offer_start_date,
+            "offer_end_date" => $this->offer_end_date,
             "sleeps" => $this->sleeps,
             "status" => $this->status,
             "createdAt" => $this->created_at,
