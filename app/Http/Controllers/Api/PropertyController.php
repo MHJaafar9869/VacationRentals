@@ -333,69 +333,87 @@ class PropertyController extends Controller
         ], 200);
     }
     public function search(Request $request)
-    {
-        $query = Property::with(['category', 'owner', 'booking'])
-            ->where('status', '=', 'accepted');
+{
+    $query = Property::with(['category', 'owner', 'booking'])
+        ->where('status', '=', 'accepted');
 
-        if ($request->has('location') && $request->input('location') !== null) {
-            $location = $request->input('location');
-            $query->where('location', 'LIKE', '%' . $location . '%');
-        }
-
-        if ($request->has('sleeps') && $request->input('sleeps') !== null) {
-            $query->where('sleeps', '>=', $request->input('sleeps'));
-        }
-
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $startDate = Carbon::parse($request->input('start_date'));
-            $endDate = Carbon::parse($request->input('end_date'));
-
-            if ($startDate->isPast() || $endDate->isPast()) {
-                return response()->json([
-                    'message' => 'The selected date range has passed. Please choose future dates.',
-                    'data' => []
-                ], 200);
-            }
-
-            if ($startDate->gt($endDate)) {
-                return response()->json(['message' => 'The start date cannot be after the end date.'], 200);
-            }
-
-            // Gets the properties where dates are not booked
-            $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
-                $bookingQuery->where(function ($dateQuery) use ($startDate, $endDate) {
-                    $dateQuery->where(function ($query) use ($startDate, $endDate) {
-                        $query->where('start_date', '<=', $endDate)
-                            ->where('end_date', '>=', $startDate);
-                    });
-                });
-            });
-
-            // Gets the properties where dates are not blocked
-            $query->whereDoesntHave('blocks', function ($blockQuery) use ($startDate, $endDate) {
-                $blockQuery->where(function ($dateQuery) use ($startDate, $endDate) {
-                    $dateQuery->where(function ($query) use ($startDate, $endDate) {
-                        $query->where('start_date', '<=', $endDate)
-                            ->where('end_date', '>=', $startDate);
-                    });
-                });
-            });
-        } else {
-            return response()->json(['message' => 'Please provide both start and end dates.'], 200);
-        }
-
-        $properties = $query->get();
-
-        if ($properties->isEmpty()) {
-            return response()->json(['message' => 'No properties found'], 200);
-        }
-
-        return response()->json([
-            'status' => '200',
-            'message' => 'Data returned successfully',
-            'data' => PropertyResource::collection($properties),
-        ]);
+    if ($request->has('location') && $request->input('location') !== null) {
+        $location = $request->input('location');
+        $query->where('location', 'LIKE', '%' . $location . '%');
     }
+
+    if ($request->has('sleeps') && $request->input('sleeps') !== null) {
+        $query->where('sleeps', '>=', $request->input('sleeps'));
+    }
+
+    if ($request->has('price_min') && $request->input('price_min') !== null) {
+        $priceMin = $request->input('price_min');
+        $query->where('night_rate', '>=', $priceMin);
+    }
+
+    if ($request->has('price_max') && $request->input('price_max') !== null) {
+        $priceMax = $request->input('price_max');
+        $query->where('night_rate', '<=', $priceMax);
+    }
+
+    if ($request->has('bedrooms') && $request->input('bedrooms') !== null) {
+        $query->where('bedrooms', '>=', $request->input('bedrooms'));
+    }
+
+    if ($request->has('bathrooms') && $request->input('bathrooms') !== null) {
+        $query->where('bathrooms', '>=', $request->input('bathrooms'));
+    }
+
+    
+    if ($request->has('start_date') && $request->has('end_date')) {
+        $startDate = Carbon::parse($request->input('start_date'));
+        $endDate = Carbon::parse($request->input('end_date'));
+
+        if ($startDate->isPast() || $endDate->isPast()) {
+            return response()->json([
+                'message' => 'The selected date range has passed. Please choose future dates.',
+                'data' => []
+            ], 200);
+        }
+
+        if ($startDate->gt($endDate)) {
+            return response()->json(['message' => 'The start date cannot be after the end date.'], 200);
+        }
+
+        
+        $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
+            $bookingQuery->where(function ($dateQuery) use ($startDate, $endDate) {
+                $dateQuery->where(function ($query) use ($startDate, $endDate) {
+                    $query->where('start_date', '<=', $endDate)
+                        ->where('end_date', '>=', $startDate);
+                });
+            });
+        });
+
+        $query->whereDoesntHave('blocks', function ($blockQuery) use ($startDate, $endDate) {
+            $blockQuery->where(function ($dateQuery) use ($startDate, $endDate) {
+                $dateQuery->where(function ($query) use ($startDate, $endDate) {
+                    $query->where('start_date', '<=', $endDate)
+                        ->where('end_date', '>=', $startDate);
+                });
+            });
+        });
+    } else {
+        return response()->json(['message' => 'Please provide both start and end dates.'], 200);
+    }
+
+    $properties = $query->get();
+
+    if ($properties->isEmpty()) {
+        return response()->json(['message' => 'No properties found'], 200);
+    }
+
+    return response()->json([
+        'status' => '200',
+        'message' => 'Data returned successfully',
+        'data' => PropertyResource::collection($properties),
+    ]);
+}
 
 
     public function getSuggestions(Request $request)
