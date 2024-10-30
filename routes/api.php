@@ -54,11 +54,13 @@ Route::get('/properties/search', [PropertyController::class, 'search']);
 Route::get('/location-suggestions', [PropertyController::class, 'getSuggestions']);
 
 Route::post('/booking/message', [MessageController::class, 'message'])->middleware('auth:sanctum');
-Route::get('rooms/{propertyId}/{userId}/{bookingId}', [MessageController::class, 'getRoomDetails'])->middleware('auth:sanctum');
-Route::get('/property/{id}/bookings', [PropertyController::class, 'getBookingsByProperty'])->middleware('auth:sanctum');
+Route::get('rooms/{userId}/{bookingId}', [MessageController::class, 'getRoomDetails'])->middleware('auth:sanctum');
+
 Route::post('/pusher/auth', function (Request $request) {
     return Broadcast::auth($request);
 })->middleware('auth:sanctum');
+
+Route::get('/property/{id}/bookings', [PropertyController::class, 'getBookingsByProperty'])->middleware('auth:sanctum');
 Route::get('/booking/owner-details/{id}', [BookingController::class, 'getOwnerInfo']);
 Route::delete('/property/{propertyId}/block/{blockId}', [PropertyController::class, 'removeBlock'])->middleware('auth:sanctum');
 // ================= //
@@ -143,7 +145,7 @@ Route::controller(StripePaymentController::class)->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reviews', [ReviewController::class, 'addReview']);
-    Route::get('/check-booking/{propertyId}' , [ReviewController::class, 'checkBooking'])->middleware('auth:sanctum');
+    Route::get('/check-booking/{propertyId}', [ReviewController::class, 'checkBooking'])->middleware('auth:sanctum');
 });
 
 Route::get('/properties/{id}/reviews', [ReviewController::class, 'getPropertyReviews']);
@@ -183,5 +185,5 @@ Route::controller(TestimonialController::class)->group(function () {
 });
 
 
-Route::get('first/three' , [PropertyController::class, 'getFirstThree'])->name('first.three');
-Route::put('properties/{id}/update-status' , [PropertyController::class, 'updateShowProperty'])->name('update.status')->middleware('auth:sanctum');
+Route::get('first/three', [PropertyController::class, 'getFirstThree'])->name('first.three');
+Route::put('properties/{id}/update-status', [PropertyController::class, 'updateShowProperty'])->name('update.status')->middleware('auth:sanctum');

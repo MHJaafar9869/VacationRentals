@@ -10,9 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Auth\Notifications\VerifyEmail;
-
-
-
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -46,15 +44,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    public function payments(){
+    public function payments()
+    {
 
         return $this->hasMany(Payment::class);
     }
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -77,13 +71,17 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Property::class, 'favorites')->withTimestamps();
     }
-    public function reviews()
+    public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
-    public function testimonials()
+    public function testimonials(): HasMany
     {
         return $this->hasMany(Testimonial::class);
     }
-}
 
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class);
+    }
+}
