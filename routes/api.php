@@ -99,8 +99,8 @@ Route::put('/users/{id}', [UserController::class, 'updateProfile']);
 Route::get('/owners/{id}', [OwnerController::class, 'show']);
 Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
-Route::put('/users/{id}', [UserController::class, 'updateProfile']);
-Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
+// Route::put('/users/{id}', [UserController::class, 'updateProfile']);
+// Route::put('/owners/{id}', [OwnerController::class, 'updateProfile']);
 
 Route::middleware('auth:sanctum')->get('/user/payments', [UserController::class, 'userWithPayments']);
 Route::middleware('auth:sanctum')->get('/owner/details', [OwnerController::class, 'ownerDetails']);
@@ -143,7 +143,7 @@ Route::controller(StripePaymentController::class)->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reviews', [ReviewController::class, 'addReview']);
-    Route::get('/check-booking/{propertyId}' , [ReviewController::class, 'checkBooking'])->middleware('auth:sanctum');
+    Route::get('/check-booking/{propertyId}', [ReviewController::class, 'checkBooking'])->middleware('auth:sanctum');
 });
 
 Route::get('/properties/{id}/reviews', [ReviewController::class, 'getPropertyReviews']);
@@ -183,5 +183,5 @@ Route::controller(TestimonialController::class)->group(function () {
 });
 
 
-Route::get('first/three' , [PropertyController::class, 'getFirstThree'])->name('first.three');
-Route::put('properties/{id}/update-status' , [PropertyController::class, 'updateShowProperty'])->name('update.status')->middleware('auth:sanctum');
+Route::get('first/three', [PropertyController::class, 'getFirstThree'])->name('first.three');
+Route::put('properties/{id}/update-status', [PropertyController::class, 'updateShowProperty'])->name('update.status')->middleware('auth:sanctum');

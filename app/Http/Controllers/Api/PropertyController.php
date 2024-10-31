@@ -28,17 +28,18 @@ class PropertyController extends Controller
 {
 
 
-    public function getFirstThree(){
+    public function getFirstThree()
+    {
 
         $properties = Property::where('status', '=', 'accepted')->take(3)->get();
-        return ApiResponse::sendResponse(200 , 'Properties fetched successfully',PropertyResource::collection($properties));     
+        return ApiResponse::sendResponse(200, 'Properties fetched successfully', PropertyResource::collection($properties));
     }
     public function index(Request $request)
     {
         $limit = $request->input('limit', 20);
         $page = $request->input('page', 1);
 
-        $propertiesQuery = Property::where('status', '=', 'accepted')->where('show' , '=' , 'available');
+        $propertiesQuery = Property::where('status', '=', 'accepted')->where('show', '=', 'available');
 
         if ($request->has('limit') && $request->has('page')) {
             $properties = $propertiesQuery->paginate($limit, ['*'], 'page', $page);
@@ -83,7 +84,7 @@ class PropertyController extends Controller
             'location' => 'required | min:5 | max:255',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
-            'sleeps' => 'required | min:1',
+            'sleeps' => 'required | min:1 | integer',
         ]);
 
         if ($validator->fails()) {
@@ -333,87 +334,87 @@ class PropertyController extends Controller
         ], 200);
     }
     public function search(Request $request)
-{
-    $query = Property::with(['category', 'owner', 'booking'])
-        ->where('status', '=', 'accepted');
+    {
+        $query = Property::with(['category', 'owner', 'booking'])
+            ->where('status', '=', 'accepted');
 
-    if ($request->has('location') && $request->input('location') !== null) {
-        $location = $request->input('location');
-        $query->where('location', 'LIKE', '%' . $location . '%');
-    }
-
-    if ($request->has('sleeps') && $request->input('sleeps') !== null) {
-        $query->where('sleeps', '>=', $request->input('sleeps'));
-    }
-
-    if ($request->has('price_min') && $request->input('price_min') !== null) {
-        $priceMin = $request->input('price_min');
-        $query->where('night_rate', '>=', $priceMin);
-    }
-
-    if ($request->has('price_max') && $request->input('price_max') !== null) {
-        $priceMax = $request->input('price_max');
-        $query->where('night_rate', '<=', $priceMax);
-    }
-
-    if ($request->has('bedrooms') && $request->input('bedrooms') !== null) {
-        $query->where('bedrooms', '>=', $request->input('bedrooms'));
-    }
-
-    if ($request->has('bathrooms') && $request->input('bathrooms') !== null) {
-        $query->where('bathrooms', '>=', $request->input('bathrooms'));
-    }
-
-    
-    if ($request->has('start_date') && $request->has('end_date')) {
-        $startDate = Carbon::parse($request->input('start_date'));
-        $endDate = Carbon::parse($request->input('end_date'));
-
-        if ($startDate->isPast() || $endDate->isPast()) {
-            return response()->json([
-                'message' => 'The selected date range has passed. Please choose future dates.',
-                'data' => []
-            ], 200);
+        if ($request->has('location') && $request->input('location') !== null) {
+            $location = $request->input('location');
+            $query->where('location', 'LIKE', '%' . $location . '%');
         }
 
-        if ($startDate->gt($endDate)) {
-            return response()->json(['message' => 'The start date cannot be after the end date.'], 200);
+        if ($request->has('sleeps') && $request->input('sleeps') !== null) {
+            $query->where('sleeps', '>=', $request->input('sleeps'));
         }
 
-        
-        $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
-            $bookingQuery->where(function ($dateQuery) use ($startDate, $endDate) {
-                $dateQuery->where(function ($query) use ($startDate, $endDate) {
-                    $query->where('start_date', '<=', $endDate)
-                        ->where('end_date', '>=', $startDate);
+        if ($request->has('price_min') && $request->input('price_min') !== null) {
+            $priceMin = $request->input('price_min');
+            $query->where('night_rate', '>=', $priceMin);
+        }
+
+        if ($request->has('price_max') && $request->input('price_max') !== null) {
+            $priceMax = $request->input('price_max');
+            $query->where('night_rate', '<=', $priceMax);
+        }
+
+        if ($request->has('bedrooms') && $request->input('bedrooms') !== null) {
+            $query->where('bedrooms', '>=', $request->input('bedrooms'));
+        }
+
+        if ($request->has('bathrooms') && $request->input('bathrooms') !== null) {
+            $query->where('bathrooms', '>=', $request->input('bathrooms'));
+        }
+
+
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = Carbon::parse($request->input('start_date'));
+            $endDate = Carbon::parse($request->input('end_date'));
+
+            if ($startDate->isPast() || $endDate->isPast()) {
+                return response()->json([
+                    'message' => 'The selected date range has passed. Please choose future dates.',
+                    'data' => []
+                ], 200);
+            }
+
+            if ($startDate->gt($endDate)) {
+                return response()->json(['message' => 'The start date cannot be after the end date.'], 200);
+            }
+
+
+            $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
+                $bookingQuery->where(function ($dateQuery) use ($startDate, $endDate) {
+                    $dateQuery->where(function ($query) use ($startDate, $endDate) {
+                        $query->where('start_date', '<=', $endDate)
+                            ->where('end_date', '>=', $startDate);
+                    });
                 });
             });
-        });
 
-        $query->whereDoesntHave('blocks', function ($blockQuery) use ($startDate, $endDate) {
-            $blockQuery->where(function ($dateQuery) use ($startDate, $endDate) {
-                $dateQuery->where(function ($query) use ($startDate, $endDate) {
-                    $query->where('start_date', '<=', $endDate)
-                        ->where('end_date', '>=', $startDate);
+            $query->whereDoesntHave('blocks', function ($blockQuery) use ($startDate, $endDate) {
+                $blockQuery->where(function ($dateQuery) use ($startDate, $endDate) {
+                    $dateQuery->where(function ($query) use ($startDate, $endDate) {
+                        $query->where('start_date', '<=', $endDate)
+                            ->where('end_date', '>=', $startDate);
+                    });
                 });
             });
-        });
-    } else {
-        return response()->json(['message' => 'Please provide both start and end dates.'], 200);
+        } else {
+            return response()->json(['message' => 'Please provide both start and end dates.'], 200);
+        }
+
+        $properties = $query->get();
+
+        if ($properties->isEmpty()) {
+            return response()->json(['message' => 'No properties found'], 200);
+        }
+
+        return response()->json([
+            'status' => '200',
+            'message' => 'Data returned successfully',
+            'data' => PropertyResource::collection($properties),
+        ]);
     }
-
-    $properties = $query->get();
-
-    if ($properties->isEmpty()) {
-        return response()->json(['message' => 'No properties found'], 200);
-    }
-
-    return response()->json([
-        'status' => '200',
-        'message' => 'Data returned successfully',
-        'data' => PropertyResource::collection($properties),
-    ]);
-}
 
 
     public function getSuggestions(Request $request)
@@ -728,11 +729,12 @@ class PropertyController extends Controller
     }
 
 
-    public function updateShowProperty($id, Request $request){
+    public function updateShowProperty($id, Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'show' => 'required|in:available,unavailable'
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => 422,
@@ -740,28 +742,28 @@ class PropertyController extends Controller
                 'errors' => $validator->messages()
             ], 422);
         }
-    
+
         $validatedData = $validator->validated();
-    
+
         $property = Property::find($id);
-        if (!$property){
+        if (!$property) {
             return response()->json([
                 'status' => 404,
                 'message' => 'Property not found',
                 'data' => [],
             ], 404);
         }
-    
+
         $property->show = $validatedData['show'];
         $property->save();
-    
+
         return response()->json([
             'status' => 200,
             'message' => 'Property updated successfully',
             'data' => $property->show,
         ]);
     }
-    
+
 
     public function updateOffer(Request $request, Property $property)
     {
@@ -776,20 +778,19 @@ class PropertyController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
-    
+
         // If validation passes, update the property
         $data = $validator->validated();
-    
+
         $property->offer = $data['offer'];
         $property->offer_start_date = $data['offer_start_date'] ?? null;
         $property->offer_end_date = $data['offer_end_date'] ?? null;
-    
+
         $property->save();
-    
+
         return response()->json([
             'message' => 'Offer updated successfully',
             'property' => new PropertyResource($property),
         ], 200);
     }
-      
 }
