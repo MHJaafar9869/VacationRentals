@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Owner;
 use App\Models\User;
+use App\Notifications\UserRegistered;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -53,7 +55,14 @@ class RegisteredUserController extends Controller
             event(new Registered($user));
             $token = $user->createToken('auth_token')->plainTextToken;
     
+            $admin = Owner::where('role', 'admin')->first();
+            if ($admin) {
+                // Notify the admin about the new user registration
+                $admin->notify(new UserRegistered($user));
+            }
+            
             // Log the user in
+
             Auth::login($user , true);
     
             return response()->json([

@@ -14,6 +14,7 @@ use App\Models\Payment;
 use App\Models\Property;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -321,4 +322,17 @@ class AdminController extends Controller
 
         return PaymentResource::collection($payments);
     }
+
+    public function notifications(){    
+        $user = Auth::user('owner');
+
+        if ($user && $user->role === 'admin') { 
+            $notifications = $user->notifications()->orderBy('created_at', 'desc')->get();
+        } else {
+            $notifications = [];
+        }
+    return response()->json($notifications);
+
+    }
+
 }
