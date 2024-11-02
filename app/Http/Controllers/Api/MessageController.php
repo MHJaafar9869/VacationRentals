@@ -5,20 +5,21 @@ namespace App\Http\Controllers\Api;
 use App\Events\Message;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Models\Owner;
 use App\Models\Room;
-use App\Models\User;
+use App\Models\Message as ModelMessage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class MessageController extends Controller
 {
     public function message(Request $request)
     {
+        $userId = $request->user()->id;
+
         $validator = Validator::make($request->all(), [
             'guest_id' => 'required',
-            'bookingId' => 'required',
+            'host_id' => 'required',
+            'booking_id' => 'required',
             'username' => 'required',
             'message' => 'required',
         ]);
@@ -31,47 +32,64 @@ class MessageController extends Controller
         }
 
         $guestId = $request->input("guest_id");
+        $hostId = $request->input("host_id");
+        $bookingId = $request->input("booking_id");
         $username = $request->input("username");
         $message = $request->input("message");
-        $bookingId = $request->input("bookingId");
 
         $booking = Booking::with('property.owner')->find($bookingId);
 
         if (!$booking) {
             return response()->json([
                 'code' => 404,
-                'message' => 'No booking found with that ID'
+                'message' => "No booking found with the ID: {$bookingId}",
             ], 404);
         }
 
-        $hostId = $booking->property->owner->id;
-
-        if ($booking->guest_id !== $guestId) {
+        if ($booking->user_id !== $guestId || $booking->user_id !== $hostId) {
             return response()->json([
                 'code' => 403,
-                'message' => 'Guest ID does not match the booking'
+                'message' => "Unauthorized Access: User is neither host nor guest."
+            ], 403);
+        }
+
+        if ($userId !== $guestId || $userId !== $hostId) {
+            return response()->json([
+                'code' => 403,
+                'message' => "Unauthorized Access: User is neither host nor guest."
             ], 403);
         }
 
         event(new Message($username, $message, $guestId, $hostId, $bookingId));
 
-        Log::info("Event triggered: {$username}, {$message}, Guest ID: {$guestId}, Host ID: {$hostId}, Booking ID: {$bookingId}");
+        $message_data = $this->storeMessage($hostId, $guestId, $bookingId, $message);
 
         return response()->json([
+            'status' => 200,
             'message' => 'Message sent successfully.',
-            'content' => new Message($username, $message, $guestId, $hostId, $bookingId)
+            'data' => $message_data
         ], 200);
     }
 
-
-    public function getRoomDetails($propertyId, $userId, $bookingId)
+    private function storeMessage(int $hostId, int $guestId, int $bookingId, string $message)
     {
-        $room = Room::where('property_id', $propertyId)
-            ->where('booking_id', $bookingId)
+        return ModelMessage::create([
+            'owner_id' => $hostId,
+            'guest_id' => $guestId,
+            'booking_id' => $bookingId,
+            'message' => $message
+        ]);
+    }
+
+    public function getRoomDetails($userId, $bookingId)
+    {
+        $room = Room::with('messages')
+            ->where('booking_id', '=', $bookingId)
             ->where(function ($query) use ($userId) {
-                $query->where('guest_id', $userId)
-                    ->orWhere('host_id', $userId);
+                $query->where('guest_id', '=', $userId)
+                    ->orWhere('host_id', '=', $userId);
             })
+            ->orderBy('created_at', 'DESC')
             ->first();
 
         if ($room) {
@@ -84,7 +102,4 @@ class MessageController extends Controller
 
         return response()->json(['status' => 404, 'message' => 'Room not found.', 'data' => []], 200);
     }
-
-
-
 }

@@ -229,7 +229,7 @@ class PropertyController extends Controller
 
         return response()->json(['message' => 'Images uploaded successfully.'], 201);
     }
-    //TODO Function still in development - BUG: image doesn't get uploaded issue might be in the front-end.
+    // TODO Function still in development - BUG: image doesn't get uploaded issue might be in the front-end.
     public function updateImages(UpdatePropertyImagesRequest $request, $propertyId)
     {
         $property = Property::findOrFail($propertyId);
@@ -506,12 +506,11 @@ class PropertyController extends Controller
         ]);
 
         $amenityIds = $request->input('amenity');
-        $numAmenities = count($amenityIds);  // Number of selected amenities
+        $numAmenities = count($amenityIds);
 
         $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
-            // Ensuring that all selected amenities are present
             $query->whereIn('id', $amenityIds);
-        }, '=', $numAmenities) // Make sure the count matches the selected number of amenities
+        }, '=', $numAmenities)
             ->where('status', '=', 'accepted')
             ->get();
 
@@ -581,7 +580,7 @@ class PropertyController extends Controller
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
 
-        // Check if the property is already blocked during the selected dates
+        // Checks if the property is already blocked during the selected dates
         $existingBlock = Block::where('property_id', '=', $id)
             ->where(function ($query) use ($start_date, $end_date) {
                 $query->whereBetween('start_date', [$start_date, $end_date])

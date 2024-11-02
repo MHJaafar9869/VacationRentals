@@ -54,11 +54,13 @@ Route::get('/properties/search', [PropertyController::class, 'search']);
 Route::get('/location-suggestions', [PropertyController::class, 'getSuggestions']);
 
 Route::post('/booking/message', [MessageController::class, 'message'])->middleware('auth:sanctum');
-Route::get('rooms/{propertyId}/{userId}/{bookingId}', [MessageController::class, 'getRoomDetails'])->middleware('auth:sanctum');
-Route::get('/property/{id}/bookings', [PropertyController::class, 'getBookingsByProperty'])->middleware('auth:sanctum');
+Route::get('rooms/{userId}/{bookingId}', [MessageController::class, 'getRoomDetails'])->middleware('auth:sanctum');
+
 Route::post('/pusher/auth', function (Request $request) {
     return Broadcast::auth($request);
 })->middleware('auth:sanctum');
+
+Route::get('/property/{id}/bookings', [PropertyController::class, 'getBookingsByProperty'])->middleware('auth:sanctum');
 Route::get('/booking/owner-details/{id}', [BookingController::class, 'getOwnerInfo']);
 Route::delete('/property/{propertyId}/block/{blockId}', [PropertyController::class, 'removeBlock'])->middleware('auth:sanctum');
 // ================= //
@@ -155,25 +157,6 @@ Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUser
 Route::get('/admin/owner/{id}', [AdminController::class, 'getOwnerDetails']);
 Route::delete('/properties/{id}', [PropertyController::class, 'delete']);
 
-Route::get('/test-pusher', function () {
-    $options = [
-        'cluster' => env('PUSHER_APP_CLUSTER'),
-        'useTLS' => true,
-    ];
-
-    $pusher = new Pusher(
-        env('PUSHER_APP_KEY'),
-        env('PUSHER_APP_SECRET'),
-        env('PUSHER_APP_ID'),
-        $options
-    );
-
-    $data['message'] = 'Test message';
-    $pusher->trigger('test-channel', 'test-event', $data);
-
-    return 'Message sent!';
-})->middleware('auth:sanctum');
-
 
 Route::controller(TestimonialController::class)->group(function () {
     Route::post('/testimonial', 'store')->name('testimonial.store')->middleware('auth:sanctum');
@@ -186,4 +169,4 @@ Route::controller(TestimonialController::class)->group(function () {
 Route::get('first/three', [PropertyController::class, 'getFirstThree'])->name('first.three');
 Route::put('properties/{id}/update-status', [PropertyController::class, 'updateShowProperty'])->name('update.status')->middleware('auth:sanctum');
 Route::get('/notifications', [AdminController::class, 'notifications'])->middleware('auth:sanctum');
-Route::get('/owner/notifications' , [OwnerController::class, 'getNotifications'])->middleware('auth:sanctum');
+Route::get('/owner/notifications', [OwnerController::class, 'getNotifications'])->middleware('auth:sanctum');

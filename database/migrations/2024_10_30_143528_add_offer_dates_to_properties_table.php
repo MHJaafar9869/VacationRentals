@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::table('properties', function (Blueprint $table) {
             $table->date('offer_start_date')->nullable();
             $table->date('offer_end_date')->nullable();
-
         });
     }
 
