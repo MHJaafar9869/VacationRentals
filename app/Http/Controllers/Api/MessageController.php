@@ -84,7 +84,7 @@ class MessageController extends Controller
     public function getRoomDetails($userId, $bookingId)
     {
         $room = Room::with('messages')
-            ->where('booking_id', $bookingId)
+            ->where('booking_id', '=', $bookingId)
             ->where(function ($query) use ($userId) {
                 $query->where('guest_id', '=', $userId)
                     ->orWhere('host_id', '=', $userId);

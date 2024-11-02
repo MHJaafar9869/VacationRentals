@@ -8,24 +8,14 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
 class Message implements ShouldBroadcastNow
 {
-    public string $username;
-    public string $message;
-    public int $guestId;
-    public int $hostId;
-    public int $bookingId;
+
     public function __construct(
-        string $username,
-        string $message,
-        int $guestId,
-        int $hostId,
-        int $bookingId
-    ) {
-        $this->username = $username;
-        $this->message = $message;
-        $this->guestId = $guestId;
-        $this->hostId = $hostId;
-        $this->bookingId = $bookingId;
-    }
+        public string $username,
+        public string $message,
+        public int $guestId,
+        public int $hostId,
+        public int $bookingId
+    ) {}
 
     public function broadcastOn()
     {

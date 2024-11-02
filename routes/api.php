@@ -157,25 +157,6 @@ Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUser
 Route::get('/admin/owner/{id}', [AdminController::class, 'getOwnerDetails']);
 Route::delete('/properties/{id}', [PropertyController::class, 'delete']);
 
-Route::get('/test-pusher', function () {
-    $options = [
-        'cluster' => env('PUSHER_APP_CLUSTER'),
-        'useTLS' => true,
-    ];
-
-    $pusher = new Pusher(
-        env('PUSHER_APP_KEY'),
-        env('PUSHER_APP_SECRET'),
-        env('PUSHER_APP_ID'),
-        $options
-    );
-
-    $data['message'] = 'Test message';
-    $pusher->trigger('test-channel', 'test-event', $data);
-
-    return 'Message sent!';
-})->middleware('auth:sanctum');
-
 
 Route::controller(TestimonialController::class)->group(function () {
     Route::post('/testimonial', 'store')->name('testimonial.store')->middleware('auth:sanctum');

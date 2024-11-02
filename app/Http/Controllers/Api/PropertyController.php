@@ -390,7 +390,7 @@ class PropertyController extends Controller
                     });
                 });
             });
-            // Checks if there's no blocks in the specified dates.
+            // filters out the properties that are blocked during the specified dates.
             $query->whereDoesntHave('blocks', function ($blockQuery) use ($startDate, $endDate) {
                 $blockQuery->where(function ($dateQuery) use ($startDate, $endDate) {
                     $dateQuery->where(function ($query) use ($startDate, $endDate) {
@@ -506,12 +506,11 @@ class PropertyController extends Controller
         ]);
 
         $amenityIds = $request->input('amenity');
-        $numAmenities = count($amenityIds);  // Number of selected amenities
+        $numAmenities = count($amenityIds);
 
         $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
-            // Ensuring that all selected amenities are present
             $query->whereIn('id', $amenityIds);
-        }, '=', $numAmenities) // Make sure the count matches the selected number of amenities
+        }, '=', $numAmenities)
             ->where('status', '=', 'accepted')
             ->get();
 
@@ -581,7 +580,7 @@ class PropertyController extends Controller
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
 
-        // Check if the property is already blocked during the selected dates
+        // Checks if the property is already blocked during the selected dates
         $existingBlock = Block::where('property_id', '=', $id)
             ->where(function ($query) use ($start_date, $end_date) {
                 $query->whereBetween('start_date', [$start_date, $end_date])
@@ -778,20 +777,18 @@ class PropertyController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
-    
-        // If validation passes, update the property
+
         $data = $validator->validated();
-    
+
         $property->offer = $data['offer'];
         $property->offer_start_date = $data['offer_start_date'] ?? null;
         $property->offer_end_date = $data['offer_end_date'] ?? null;
-    
+
         $property->save();
-    
+
         return response()->json([
             'message' => 'Offer updated successfully',
             'property' => new PropertyResource($property),
         ], 200);
     }
-      
 }
