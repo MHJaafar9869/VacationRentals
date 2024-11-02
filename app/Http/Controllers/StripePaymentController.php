@@ -8,6 +8,8 @@ use App\Models\Payment;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\User;
+use App\Notifications\NewBookProperty;
+use App\Notifications\NewOwnerRegister;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -91,6 +93,9 @@ class StripePaymentController extends Controller
 
                 $property = Property::where('name', $response->metadata->product_name)->first();
                 $owner = Owner::where('id', $property->owner_id)->first();
+                if($owner){
+                    $owner->notify(new NewBookProperty($owner));
+                }
                 $owner->wallet += $response->amount_total / 100;
                 $owner->save();
 
