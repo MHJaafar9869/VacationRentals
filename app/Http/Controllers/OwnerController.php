@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Resources\OwnerResource;
 use Illuminate\Http\Request;
 use App\Models\Owner;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class OwnerController extends Controller
 {
@@ -99,5 +100,16 @@ class OwnerController extends Controller
         $owner->save();
 
         return response()->json(['message' => 'Owner profile updated successfully.']);
+    }
+
+    public function getNotifications(){
+        $owner = Auth::user('owner');
+        $notifications = $owner->notifications()
+        ->orderBy('created_at', 'desc') 
+        ->get();
+
+    return response()->json($notifications);
+
+    // return response()->json($notifications);
     }
 }

@@ -84,7 +84,7 @@ class PropertyController extends Controller
             'location' => 'required | min:5 | max:255',
             'night_rate' => 'required | integer',
             'category_id' => 'required',
-            'sleeps' => 'required | min:1',
+            'sleeps' => 'required | min:1 | integer',
         ]);
 
         if ($validator->fails()) {
@@ -381,7 +381,7 @@ class PropertyController extends Controller
                 return response()->json(['message' => 'The start date cannot be after the end date.'], 200);
             }
 
-            // filters out the properties that are booked during the specified dates.
+
             $query->whereDoesntHave('booking', function ($bookingQuery) use ($startDate, $endDate) {
                 $bookingQuery->where(function ($dateQuery) use ($startDate, $endDate) {
                     $dateQuery->where(function ($query) use ($startDate, $endDate) {
@@ -390,7 +390,7 @@ class PropertyController extends Controller
                     });
                 });
             });
-            // filters out the properties that are blocked during the specified dates.
+
             $query->whereDoesntHave('blocks', function ($blockQuery) use ($startDate, $endDate) {
                 $blockQuery->where(function ($dateQuery) use ($startDate, $endDate) {
                     $dateQuery->where(function ($query) use ($startDate, $endDate) {
@@ -778,6 +778,7 @@ class PropertyController extends Controller
             ], 422);
         }
 
+        // If validation passes, update the property
         $data = $validator->validated();
 
         $property->offer = $data['offer'];
