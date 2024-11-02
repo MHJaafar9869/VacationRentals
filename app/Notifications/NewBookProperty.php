@@ -3,18 +3,21 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class UserRegistered extends Notification
+class NewBookProperty extends Notification
 {
     use Queueable;
-
     public $user;
+
     /**
      * Create a new notification instance.
      */
     public function __construct($user)
     {
+        //
         $this->user = $user;
     }
 
@@ -44,7 +47,7 @@ class UserRegistered extends Notification
             //
             'user_id' => $this->user->id,
             'name' => $this->user->name,
-            'message' => 'New user registered: ' . $this->user->name,
+            'message' => 'New property booked By : ' . $this->user->name,
         ];
     }
 }

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\AdminAuth;
 use App\Http\Controllers\Controller;
 use App\Models\Owner;
 use App\Models\User;
+use App\Notifications\NewOwnerRegister;
+use App\Notifications\UserRegistered;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -64,6 +66,11 @@ class RegisteredUserController extends Controller
         // Fire the Registered event
         event(new Registered($owner));
 
+        $admin = Owner::where('role', 'admin')->first();
+        if ($admin) {
+            // Notify the admin about the new user registration
+            $admin->notify(new NewOwnerRegister($owner));
+        }
         // Create and return token
         $token = $owner->createToken('auth_token')->plainTextToken;
         Auth::guard('owner')->login($owner);
