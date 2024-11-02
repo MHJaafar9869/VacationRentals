@@ -185,3 +185,4 @@ Route::controller(TestimonialController::class)->group(function () {
 
 Route::get('first/three', [PropertyController::class, 'getFirstThree'])->name('first.three');
 Route::put('properties/{id}/update-status', [PropertyController::class, 'updateShowProperty'])->name('update.status')->middleware('auth:sanctum');
+Route::get('/notifications', [AdminController::class, 'notifications'])->middleware('auth:sanctum');
