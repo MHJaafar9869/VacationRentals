@@ -2,13 +2,11 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
 class Message implements ShouldBroadcastNow
 {
-
     public function __construct(
         public string $username,
         public string $message,
@@ -19,7 +17,7 @@ class Message implements ShouldBroadcastNow
 
     public function broadcastOn()
     {
-        return new PrivateChannel("chat.{$this->guestId}.{$this->hostId}.{$this->bookingId}");
+        return new Channel("chat.{$this->guestId}.{$this->hostId}.{$this->bookingId}");
     }
 
     public function broadcastAs()

@@ -5,15 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Resources\OwnerResource;
 use Illuminate\Http\Request;
 use App\Models\Owner;
+use App\Models\Property;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
 class OwnerController extends Controller
 {
-
-
-
-
     public function getOwnerDetails(Request $request)
     {
         $owner = $request->user();
@@ -32,9 +29,6 @@ class OwnerController extends Controller
             'image' => $imageUrl,
         ]);
     }
-
-
-
 
     public function ownerDetails(Request $request)
     {
@@ -102,14 +96,64 @@ class OwnerController extends Controller
         return response()->json(['message' => 'Owner profile updated successfully.']);
     }
 
-    public function getNotifications(){
+    public function getNotifications()
+    {
         $owner = Auth::user('owner');
         $notifications = $owner->notifications()
-        ->orderBy('created_at', 'desc') 
-        ->get();
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    return response()->json($notifications);
+        return response()->json($notifications);
 
-    // return response()->json($notifications);
+        // return response()->json($notifications);
+    }
+
+    public function getOwnerByProperty($id)
+    {
+        $property = Property::find($id);
+
+        if (!$property) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Property not found',
+            ], 404);
+        }
+
+        $ownerId = $property->owner_id;
+
+        $owner = Owner::find($ownerId);
+
+        if (!$owner) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Owner not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Data retrieved successfully',
+            'data' => new OwnerResource($owner)
+        ]);
+    }
+
+    public function getOwnerById(Request $request, $id)
+    {
+        $owner = Owner::find($id);
+
+        if (!$owner) {
+            if (!$owner) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Owner not found',
+                ], 404);
+            }
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Data retrieved successfully',
+            'data' => new OwnerResource($owner)
+        ]);
     }
 }

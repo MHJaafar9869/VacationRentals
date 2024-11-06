@@ -14,11 +14,22 @@ class Message extends Model
         'owner_id',
         'guest_id',
         'booking_id',
+        'sender',
         'message'
     ];
 
     public function room()
     {
         return $this->belongsTo(Room::class);
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(Owner::class, 'owner_id');
+    }
+
+    public function guest()
+    {
+        return $this->belongsTo(User::class, 'guest_id');
     }
 }
