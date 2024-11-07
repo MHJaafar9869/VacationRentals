@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Models\Property;
 use App\Models\PropertyAmenity;
 use App\Models\PropertyImage;
+use App\Services\WeatherService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +28,11 @@ use Illuminate\Support\Facades\Validator;
 class PropertyController extends Controller
 {
 
+    protected $weatherService;
+    public function __construct(WeatherService $weatherService)
+    {
+        $this->weatherService = $weatherService;
+    }
 
     public function getFirstThree()
     {
@@ -34,18 +40,25 @@ class PropertyController extends Controller
         $properties = Property::where('status', '=', 'accepted')->take(3)->get();
         return ApiResponse::sendResponse(200, 'Properties fetched successfully', PropertyResource::collection($properties));
     }
-    public function index(Request $request)
+    
+    public function index(Request $request, WeatherService $weatherService)
     {
         $limit = $request->input('limit', 20);
         $page = $request->input('page', 1);
-
+    
         $propertiesQuery = Property::where('status', '=', 'accepted')->where('show', '=', 'available');
-
+    
         if ($request->has('limit') && $request->has('page')) {
             $properties = $propertiesQuery->paginate($limit, ['*'], 'page', $page);
-
+    
             if ($properties->count() > 0) {
-                return PropertyResource::collection($properties)->additional([
+                // Map each property to a new instance of PropertyResource with WeatherService
+                $propertyResources = $properties->getCollection()->map(function ($property) use ($weatherService) {
+                    return new PropertyResource($property, $weatherService);
+                });
+    
+                return response()->json([
+                    'data' => $propertyResources,
                     'meta' => [
                         'current_page' => $properties->currentPage(),
                         'from' => $properties->firstItem(),
@@ -65,13 +78,19 @@ class PropertyController extends Controller
             }
         } else {
             $properties = $propertiesQuery->get();
-
+    
             if ($properties->isNotEmpty()) {
-                return PropertyResource::collection($properties);
+                // Map each property to a new instance of PropertyResource with WeatherService
+                $propertyResources = $properties->map(function ($property) use ($weatherService) {
+                    return new PropertyResource($property, $weatherService);
+                });
+    
+                return response()->json(['data' => $propertyResources]);
             }
         }
         return response()->json(['message' => 'No record found'], 200);
     }
+    
 
     public function store(Request $request)
     {
@@ -268,8 +287,8 @@ class PropertyController extends Controller
     public function show($id)
     {
         $property = Property::with(['propertyImages', 'propertyAmenities'])->findOrFail($id);
-        return new PropertyResource($property);
-    }
+        return new PropertyResource($property, $this->weatherService);
+        }
 
     public function update(Request $request, $id)
     {
@@ -789,7 +808,7 @@ class PropertyController extends Controller
 
         return response()->json([
             'message' => 'Offer updated successfully',
-            'property' => new PropertyResource($property),
+            'property' => new PropertyResource($property , $this->weatherService),
         ], 200);
     }
 }
