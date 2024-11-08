@@ -11,14 +11,17 @@ class NewBookProperty extends Notification
 {
     use Queueable;
     public $user;
+    public $property;
+
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($user)
+    public function __construct($user, $property)
     {
         //
         $this->user = $user;
+        $this->property = $property;
     }
 
     /**
@@ -46,6 +49,7 @@ class NewBookProperty extends Notification
         return [
             //
             'user_id' => $this->user->id,
+            'property_id' => $this->property->id,
             'name' => $this->user->name,
             'message' => 'New property booked By : ' . $this->user->name,
         ];

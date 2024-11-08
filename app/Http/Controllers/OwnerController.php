@@ -102,10 +102,9 @@ class OwnerController extends Controller
         $notifications = $owner->notifications()
             ->orderBy('created_at', 'desc')
             ->get();
-
+    
         return response()->json($notifications);
 
-        // return response()->json($notifications);
     }
 
     public function getOwnerByProperty($id)

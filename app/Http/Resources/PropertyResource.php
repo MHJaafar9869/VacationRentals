@@ -26,9 +26,9 @@ class PropertyResource extends JsonResource
         $offerStartDate = \Carbon\Carbon::parse($this->offer_start_date);
         $offerEndDate = \Carbon\Carbon::parse($this->offer_end_date);
         
-        $isOfferActive = $today->between($offerStartDate, $offerEndDate);
+        // $isOfferActive = $today->between($offerStartDate, $offerEndDate);
 
-        $offerPrice = $isOfferActive && $this->offer > 0 
+        $offerPrice = $this->offer > 0 
             ? $originalPrice - ($originalPrice * ($this->offer / 100)) 
             : $originalPrice;
         return [

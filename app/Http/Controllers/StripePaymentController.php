@@ -85,6 +85,7 @@ class StripePaymentController extends Controller
                 $payment->payer_email = $response->customer_details->email ?? 'N/A';
                 $payment->payment_status = $response->payment_status;
                 $payment->payment_method = 'Stripe';
+                // $payment->property_id = $response->metadata->propertyId;
                 $payment->property_id = $response->metadata->propertyId;
                 $payment->start_date = $response->metadata->start_date;
                 $payment->end_date = $response->metadata->end_date;
@@ -93,8 +94,13 @@ class StripePaymentController extends Controller
 
                 $property = Property::where('name', $response->metadata->product_name)->first();
                 $owner = Owner::where('id', $property->owner_id)->first();
+
+                $propertyId = $response->metadata->propertyId ?? null;
+             
+
                 if($owner){
-                    $owner->notify(new NewBookProperty($owner));
+              
+                    $owner->notify(new NewBookProperty($owner , $property));
                 }
                 $owner->wallet += $response->amount_total / 100;
                 $owner->save();
