@@ -43,6 +43,7 @@ class UserRegistered extends Notification
         return [
             //
             'user_id' => $this->user->id,
+            'type' => 'user',
             'name' => $this->user->name,
             'message' => 'New user registered: ' . $this->user->name,
         ];

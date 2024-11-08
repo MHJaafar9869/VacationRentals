@@ -45,6 +45,7 @@ class NewOwnerRegister extends Notification
         return [
             //
             'user_id' => $this->user->id,
+            'type' => 'owner',
             'name' => $this->user->name,
             'message' => 'New owner registered: ' . $this->user->name,
         ];
