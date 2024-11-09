@@ -2,32 +2,26 @@
 
 namespace App\Http\Resources;
 
+use App\Services\WeatherService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PropertyResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
+   
+    
     public function toArray(Request $request): array
     {
         $originalPrice = $this->night_rate;    
 
-        // الحصول على التاريخ الحالي
-        $today = now(); // يمكنك استخدام now() للحصول على التاريخ والوقت الحالي
+        $today = now(); 
         
-        // تحويل تواريخ البدء والانتهاء إلى كائنات Carbon
         $offerStartDate = \Carbon\Carbon::parse($this->offer_start_date);
         $offerEndDate = \Carbon\Carbon::parse($this->offer_end_date);
         
-        // تحقق مما إذا كان العرض ساريًا
-        $isOfferActive = $today->between($offerStartDate, $offerEndDate);
+        // $isOfferActive = $today->between($offerStartDate, $offerEndDate);
 
-        // حساب سعر العرض
-        $offerPrice = $isOfferActive && $this->offer > 0 
+        $offerPrice = $this->offer > 0 
             ? $originalPrice - ($originalPrice * ($this->offer / 100)) 
             : $originalPrice;
         return [
