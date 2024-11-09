@@ -39,6 +39,7 @@ Route::get('/property-amenities/{id}', [PropertyController::class, 'getPropertyA
 Route::post('/properties/filter', [PropertyController::class, 'filter']);
 Route::post('/properties/category', [PropertyController::class, 'filterByCategory']);
 Route::post('/properties/{property}/offer', [PropertyController::class, 'updateOffer'])->middleware('auth:sanctum');
+Route::get('/properties/with-offer', [PropertyController::class, 'filterPropertiesWithOffer']);
 
 
 // ################ //
