@@ -57,6 +57,8 @@ Route::post('/booking/message', [MessageController::class, 'message'])->middlewa
 Route::get('/booking/{bookingId}/messages', [MessageController::class, 'getMessagesPerBooking'])->middleware('auth:sanctum');
 Route::get('rooms/{userId}/{bookingId}', [MessageController::class, 'getRoomDetails'])->middleware('auth:sanctum');
 
+Route::post('/property-booking/{id}', [BookingController::class, 'checkIfBooked']);
+
 Route::post('/pusher/auth', function (Request $request) {
     return Broadcast::auth($request);
 })->middleware('auth:sanctum');
