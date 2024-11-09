@@ -6,6 +6,7 @@ use App\Http\Resources\OwnerResource;
 use Illuminate\Http\Request;
 use App\Models\Owner;
 use App\Models\Property;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
@@ -155,4 +156,28 @@ class OwnerController extends Controller
             'data' => new OwnerResource($owner)
         ]);
     }
+
+
+    public function markAsRead($id)
+{
+    $notification = DatabaseNotification::find($id);
+    if ($notification ) { 
+        $notification->markAsRead();
+        return response()->json(['success' => true]);
+    }
+    return response()->json(['success' => false], 404);
+}
+
+
+public function unreadNotificationsCount()
+{
+    $ownerId = Auth::guard('owner')->user()->id;
+    $unreadCount = DatabaseNotification::whereNull('read_at')
+        ->where('type', 'App\Notifications\NewBookProperty')
+        ->where('notifiable_id', $ownerId)
+        ->count();
+
+
+    return response()->json(['unreadCount' => $unreadCount]);
+}
 }

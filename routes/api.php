@@ -174,3 +174,8 @@ Route::get('first/three', [PropertyController::class, 'getFirstThree'])->name('f
 Route::put('properties/{id}/update-status', [PropertyController::class, 'updateShowProperty'])->name('update.status')->middleware('auth:sanctum');
 Route::get('/notifications', [AdminController::class, 'notifications'])->middleware('auth:sanctum');
 Route::get('/owner/notifications', [OwnerController::class, 'getNotifications'])->middleware('auth:sanctum');
+Route::post('/notifications/{id}/mark-as-read', [AdminController::class, 'markAsRead']);
+Route::get('/admin/notifications/unread', [AdminController::class, 'unreadNotificationsCount']);
+
+Route::post('/owner/notifications/{id}/mark-as-read', [OwnerController::class, 'markAsRead']);
+Route::get('/owner/notifications/unread', [OwnerController::class, 'unreadNotificationsCount'])->middleware('auth:sanctum');

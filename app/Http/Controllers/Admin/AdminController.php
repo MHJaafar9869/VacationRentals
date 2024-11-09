@@ -14,7 +14,9 @@ use App\Models\Payment;
 use App\Models\Property;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -334,5 +336,28 @@ class AdminController extends Controller
     return response()->json($notifications);
 
     }
+
+    public function markAsRead($id)
+{
+
+    $notification = DatabaseNotification::find($id);
+    if ($notification) {
+        $notification->markAsRead(); 
+        return response()->json(['success' => true]);
+    }
+    return response()->json(['success' => false], 404);
+
+}
+
+public function unreadNotificationsCount()
+{
+    $unreadCount = DatabaseNotification::whereNull('read_at')
+        ->whereIn('type', [
+            'App\Notifications\UserRegistered',
+            'App\Notifications\NewOwnerRegister'
+        ])
+        ->count();
+    return response()->json(['unreadCount' => $unreadCount]);
+}
 
 }
