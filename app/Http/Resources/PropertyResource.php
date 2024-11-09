@@ -8,17 +8,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class PropertyResource extends JsonResource
 {
-    protected $weatherService;
-
-    public function __construct($resource, WeatherService $weatherService)
-    {
-        parent::__construct($resource);
-        $this->weatherService = $weatherService;
-    }
+   
     
     public function toArray(Request $request): array
     {
-        $temperature = $this->weatherService->getTemperature($this->latitude, $this->longitude);
         $originalPrice = $this->night_rate;    
 
         $today = now(); 
@@ -34,7 +27,6 @@ class PropertyResource extends JsonResource
         return [
             "id" => $this->id,
             "name" => $this->name,
-            'temperature' => $temperature,
             "headline" => $this->headline,
             "description" => $this->description,
             "bedrooms" => $this->bedrooms,
