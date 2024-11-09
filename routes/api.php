@@ -39,6 +39,7 @@ Route::get('/property-amenities/{id}', [PropertyController::class, 'getPropertyA
 Route::post('/properties/filter', [PropertyController::class, 'filter']);
 Route::post('/properties/category', [PropertyController::class, 'filterByCategory']);
 Route::post('/properties/{property}/offer', [PropertyController::class, 'updateOffer'])->middleware('auth:sanctum');
+Route::get('/properties/with-offer', [PropertyController::class, 'filterPropertiesWithOffer']);
 
 
 // ################ //
@@ -56,6 +57,8 @@ Route::get('/location-suggestions', [PropertyController::class, 'getSuggestions'
 Route::post('/booking/message', [MessageController::class, 'message'])->middleware('auth:sanctum');
 Route::get('/booking/{bookingId}/messages', [MessageController::class, 'getMessagesPerBooking'])->middleware('auth:sanctum');
 Route::get('rooms/{userId}/{bookingId}', [MessageController::class, 'getRoomDetails'])->middleware('auth:sanctum');
+
+Route::post('/property-booking/{id}', [BookingController::class, 'checkIfBooked']);
 
 Route::post('/pusher/auth', function (Request $request) {
     return Broadcast::auth($request);

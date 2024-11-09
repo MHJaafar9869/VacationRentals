@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\OwnerResource;
 use App\Http\Resources\UserResource;
+use App\Models\Block;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Owner;
-use Illuminate\Container\Attributes\Auth;
+use App\Models\Property;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class BookingController extends Controller
 {
@@ -61,6 +61,68 @@ class BookingController extends Controller
             'code' => 200,
             'message' => 'data retrieved successfully',
             'data' => $owner,
+        ]);
+    }
+
+    public function checkIfBooked(Request $request, $id)
+    {
+        $property = Property::find($id);
+
+        if (!$property) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Property not found'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Invalid date format or missing fields',
+                'error' => $validator->errors()
+            ]);
+        }
+
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        $isBooked = Booking::where('property_id', $id)
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('start_date', [$startDate, $endDate])
+                    ->orWhereBetween('end_date', [$startDate, $endDate])
+                    ->orWhere(function ($query) use ($startDate, $endDate) {
+                        $query->where('start_date', '<=', $startDate)
+                            ->where('end_date', '>=', $endDate);
+                    });
+            })->exists();
+
+        $isBlocked = Block::where('property_id', $id)
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('start_date', [$startDate, $endDate])
+                    ->orWhereBetween('end_date', [$startDate, $endDate])
+                    ->orWhere(function ($query) use ($startDate, $endDate) {
+                        $query->where('start_date', '<=', $startDate)
+                            ->where('end_date', '>=', $endDate);
+                    });
+            })->exists();
+
+        if ($isBooked || $isBlocked) {
+            return response()->json([
+                'status' => 200,
+                'available' => false,
+                'message' => "Property is not available from {$startDate} - {$endDate}"
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'available' => true,
+            'message' => "Property is available from {$startDate} - {$endDate}"
         ]);
     }
 }
