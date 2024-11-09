@@ -18,7 +18,6 @@ use App\Models\User;
 use App\Models\Property;
 use App\Models\PropertyAmenity;
 use App\Models\PropertyImage;
-use App\Services\WeatherService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,11 +27,6 @@ use Illuminate\Support\Facades\Validator;
 class PropertyController extends Controller
 {
 
-    protected $weatherService;
-    public function __construct(WeatherService $weatherService)
-    {
-        $this->weatherService = $weatherService;
-    }
 
     public function getFirstThree()
     {
@@ -40,25 +34,18 @@ class PropertyController extends Controller
         $properties = Property::where('status', '=', 'accepted')->take(3)->get();
         return ApiResponse::sendResponse(200, 'Properties fetched successfully', PropertyResource::collection($properties));
     }
-    
-    public function index(Request $request, WeatherService $weatherService)
+    public function index(Request $request)
     {
         $limit = $request->input('limit', 20);
         $page = $request->input('page', 1);
-    
+
         $propertiesQuery = Property::where('status', '=', 'accepted')->where('show', '=', 'available');
-    
+
         if ($request->has('limit') && $request->has('page')) {
             $properties = $propertiesQuery->paginate($limit, ['*'], 'page', $page);
-    
+
             if ($properties->count() > 0) {
-                // Map each property to a new instance of PropertyResource with WeatherService
-                $propertyResources = $properties->getCollection()->map(function ($property) use ($weatherService) {
-                    return new PropertyResource($property, $weatherService);
-                });
-    
-                return response()->json([
-                    'data' => $propertyResources,
+                return PropertyResource::collection($properties)->additional([
                     'meta' => [
                         'current_page' => $properties->currentPage(),
                         'from' => $properties->firstItem(),
@@ -78,19 +65,13 @@ class PropertyController extends Controller
             }
         } else {
             $properties = $propertiesQuery->get();
-    
+
             if ($properties->isNotEmpty()) {
-                // Map each property to a new instance of PropertyResource with WeatherService
-                $propertyResources = $properties->map(function ($property) use ($weatherService) {
-                    return new PropertyResource($property, $weatherService);
-                });
-    
-                return response()->json(['data' => $propertyResources]);
+                return PropertyResource::collection($properties);
             }
         }
         return response()->json(['message' => 'No record found'], 200);
     }
-    
 
     public function store(Request $request)
     {
@@ -248,7 +229,7 @@ class PropertyController extends Controller
 
         return response()->json(['message' => 'Images uploaded successfully.'], 201);
     }
-    // TODO Function still in development - BUG: image doesn't get uploaded issue might be in the front-end.
+    //TODO Function still in development - BUG: image doesn't get uploaded issue might be in the front-end.
     public function updateImages(UpdatePropertyImagesRequest $request, $propertyId)
     {
         $property = Property::findOrFail($propertyId);
@@ -287,8 +268,8 @@ class PropertyController extends Controller
     public function show($id)
     {
         $property = Property::with(['propertyImages', 'propertyAmenities'])->findOrFail($id);
-        return new PropertyResource($property, $this->weatherService);
-        }
+        return new PropertyResource($property);
+    }
 
     public function update(Request $request, $id)
     {
@@ -525,11 +506,12 @@ class PropertyController extends Controller
         ]);
 
         $amenityIds = $request->input('amenity');
-        $numAmenities = count($amenityIds);
+        $numAmenities = count($amenityIds);  // Number of selected amenities
 
         $properties = Property::whereHas('propertyAmenities', function ($query) use ($amenityIds) {
+            // Ensuring that all selected amenities are present
             $query->whereIn('id', $amenityIds);
-        }, '=', $numAmenities)
+        }, '=', $numAmenities) // Make sure the count matches the selected number of amenities
             ->where('status', '=', 'accepted')
             ->get();
 
@@ -599,7 +581,7 @@ class PropertyController extends Controller
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
 
-        // Checks if the property is already blocked during the selected dates
+        // Check if the property is already blocked during the selected dates
         $existingBlock = Block::where('property_id', '=', $id)
             ->where(function ($query) use ($start_date, $end_date) {
                 $query->whereBetween('start_date', [$start_date, $end_date])
@@ -808,7 +790,7 @@ class PropertyController extends Controller
 
         return response()->json([
             'message' => 'Offer updated successfully',
-            'property' => new PropertyResource($property , $this->weatherService),
+            'property' => new PropertyResource($property),
         ], 200);
     }
 }
