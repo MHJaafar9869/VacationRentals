@@ -607,6 +607,19 @@ class PropertyController extends Controller
 
         return ApiResponse::sendResponse(200, 'Block has been added successfully', $block);
     }
+    public function filterPropertiesWithOffer()
+{
+    $properties = Property::where('offer', '>', 0)
+        ->where('status', '=', 'accepted')
+        ->get();
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Properties with offers returned successfully',
+        'data' => PropertyResource::collection($properties)
+    ], 200);
+}
+
 
     public function getBlocksPerProperty($id, Request $request)
     {
