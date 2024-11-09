@@ -17,7 +17,7 @@ class Message implements ShouldBroadcastNow
 
     public function broadcastOn()
     {
-        return new Channel("chat.{$this->guestId}.{$this->hostId}.{$this->bookingId}");
+        return new Channel("private-chat.{$this->guestId}.{$this->hostId}.{$this->bookingId}");
     }
 
     public function broadcastAs()
