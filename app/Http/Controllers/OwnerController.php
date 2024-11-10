@@ -171,7 +171,8 @@ class OwnerController extends Controller
 
 public function unreadNotificationsCount()
 {
-    $ownerId = Auth::guard('owner')->user()->id;
+    $ownerId = Auth::user('owner')->id;
+    // dd($ownerId);
     $unreadCount = DatabaseNotification::whereNull('read_at')
         ->where('type', 'App\Notifications\NewBookProperty')
         ->where('notifiable_id', $ownerId)
