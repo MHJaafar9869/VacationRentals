@@ -58,7 +58,7 @@ class RegisteredUserController extends Controller
             'address' => $request->address,
             'gender' => $request->gender,
             'role' => $request->role,
-            'description' => $request->description,
+            'description' => '$request->description,',
             'company_name' => $request->company_name,
             'image' => $image_path
         ]);
